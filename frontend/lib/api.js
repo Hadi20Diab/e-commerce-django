@@ -78,6 +78,11 @@ export const ordersApi = {
   create: (data) => api.post('/orders/create/', data),
   list: () => api.get('/orders/'),
   detail: (id) => api.get(`/orders/${id}/`),
+  // Stripe
+  stripeCreateIntent: () => api.post('/orders/stripe/create-intent/'),
+  // PayPal
+  paypalCreateOrder: () => api.post('/orders/paypal/create-order/'),
+  paypalCapture: (data) => api.post('/orders/paypal/capture/', data),
 };
 
 // ── Contact ───────────────────────────────────────
