@@ -35,3 +35,5 @@ class CreateOrderSerializer(serializers.Serializer):
     shipping_country = serializers.CharField(max_length=100)
     payment_method = serializers.ChoiceField(choices=['mock', 'card', 'paypal'], default='mock')
     notes = serializers.CharField(required=False, allow_blank=True)
+    stripe_payment_intent_id = serializers.CharField(required=False, allow_blank=True, default='')
+    paypal_order_id = serializers.CharField(required=False, allow_blank=True, default='')
