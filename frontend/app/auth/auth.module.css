@@ -1,0 +1,109 @@
+.page {
+  min-height: calc(100vh - var(--navbar-height));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2xl) var(--space-lg);
+  background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(255, 87, 34, 0.08), transparent 60%),
+              var(--bg-base);
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  padding: var(--space-2xl);
+  width: 100%;
+  max-width: 440px;
+  box-shadow: var(--shadow-lg);
+}
+
+.cardWide { max-width: 560px; }
+
+.cardHeader {
+  text-align: center;
+  margin-bottom: var(--space-xl);
+}
+
+.logoIcon {
+  width: 52px;
+  height: 52px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.4rem;
+  color: white;
+  font-family: var(--font-display);
+  margin: 0 auto var(--space-md);
+  box-shadow: var(--shadow-primary);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.alertError {
+  background: var(--error-bg);
+  border: 1px solid rgba(255, 23, 68, 0.3);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  font-size: 0.875rem;
+  color: var(--error);
+  margin-bottom: var(--space-md);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.twoCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+}
+
+.inputError { border-color: var(--error) !important; }
+.inputError:focus { box-shadow: 0 0 0 3px var(--error-bg) !important; }
+
+.submitBtn {
+  width: 100%;
+  padding: 13px;
+  font-size: 0.95rem;
+  margin-top: var(--space-sm);
+  gap: var(--space-sm);
+}
+
+.switchText {
+  text-align: center;
+  margin-top: var(--space-lg);
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.switchLink {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color var(--transition-fast);
+}
+
+.switchLink:hover { color: var(--primary-light); }
+
+@media (max-width: 480px) {
+  .card { padding: var(--space-xl) var(--space-md); }
+  .twoCol { grid-template-columns: 1fr; }
+}
