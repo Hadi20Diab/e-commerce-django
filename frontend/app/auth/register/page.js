@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../context/AuthContext';
@@ -9,7 +9,13 @@ import styles from '../auth.module.css';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { register } = useAuth();
+  const { user, register, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading && user) router.replace('/');
+  }, [user, authLoading, router]);
+
+  if (authLoading || user) return null;
   const { addToast } = useToast();
 
   const [form, setForm] = useState({
