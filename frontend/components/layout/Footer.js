@@ -17,7 +17,7 @@ export default function Footer() {
             <span className={styles.socialLink} title="Twitter"><TwitterXIcon size={16} /></span>
             <span className={styles.socialLink} title="Instagram"><InstagramIcon size={16} /></span>
             <span className={styles.socialLink} title="Facebook"><FacebookIcon size={16} /></span>
-            <span className={styles.socialLink} title="Pinterest"><PinterestIcon size={16} />PinterestIcon size={16} /></span>
+            <span className={styles.socialLink} title="Pinterest"><PinterestIcon size={16} /></span>
           </div>
         </div>
 
