@@ -4,6 +4,10 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
+import {
+  CartIcon, UserIcon, ChevronDownIcon, PackageIcon,
+  MapPinIcon, LogOutIcon, MenuIcon, XIcon,
+} from '../icons';
 import styles from './Navbar.module.css';
 
 const NAV_LINKS = [
@@ -79,7 +83,7 @@ export default function Navbar() {
           <div className={styles.actions}>
             {/* Cart */}
             <Link href="/cart" className={styles.iconBtn} title="Cart">
-              🛒
+              <CartIcon size={20} />
               {itemCount > 0 && (
                 <span className={styles.cartBadge}>{itemCount > 99 ? '99+' : itemCount}</span>
               )}
@@ -95,7 +99,10 @@ export default function Navbar() {
                   >
                     <span className={styles.userAvatar}>{initials}</span>
                     <span className={styles.dropdownName}>{user.first_name}</span>
-                    <span className={`${styles.chevron}${dropdownOpen ? ' ' + styles.chevronOpen : ''}`}>▼</span>
+                    <ChevronDownIcon
+                      size={14}
+                      className={`${styles.chevron}${dropdownOpen ? ' ' + styles.chevronOpen : ''}`}
+                    />
                   </button>
 
                   {dropdownOpen && (
@@ -104,15 +111,21 @@ export default function Navbar() {
                         <div className={styles.dropdownName}>{user.first_name} {user.last_name}</div>
                         <div className={styles.dropdownEmail}>{user.email}</div>
                       </div>
-                      <Link href="/account" className={styles.dropdownItem}>👤 My Account</Link>
-                      <Link href="/account/orders" className={styles.dropdownItem}>📦 Orders</Link>
-                      <Link href="/account/addresses" className={styles.dropdownItem}>📍 Addresses</Link>
+                      <Link href="/account" className={styles.dropdownItem}>
+                        <UserIcon size={15} /> My Account
+                      </Link>
+                      <Link href="/account/orders" className={styles.dropdownItem}>
+                        <PackageIcon size={15} /> Orders
+                      </Link>
+                      <Link href="/account/addresses" className={styles.dropdownItem}>
+                        <MapPinIcon size={15} /> Addresses
+                      </Link>
                       <div className={styles.dropdownDivider} />
                       <button
                         className={`${styles.dropdownItem} ${styles.dropdownLogout}`}
                         onClick={handleLogout}
                       >
-                        ⏻ Sign Out
+                        <LogOutIcon size={15} /> Sign Out
                       </button>
                     </div>
                   )}
@@ -131,7 +144,7 @@ export default function Navbar() {
               onClick={() => setMenuOpen((v) => !v)}
               aria-label="Toggle menu"
             >
-              {menuOpen ? '✕' : '☰'}
+              {menuOpen ? <XIcon size={20} /> : <MenuIcon size={20} />}
             </button>
           </div>
         </div>
@@ -150,11 +163,13 @@ export default function Navbar() {
             </Link>
           ))}
           <div className={styles.mobileDivider} />
-          <Link href="/cart" className={styles.mobileNavLink}>🛒 Cart {itemCount > 0 && `(${itemCount})`}</Link>
+          <Link href="/cart" className={styles.mobileNavLink}>
+            <CartIcon size={16} /> Cart {itemCount > 0 && `(${itemCount})`}
+          </Link>
           {user ? (
             <>
-              <Link href="/account" className={styles.mobileNavLink}>👤 My Account</Link>
-              <Link href="/account/orders" className={styles.mobileNavLink}>📦 Orders</Link>
+              <Link href="/account" className={styles.mobileNavLink}><UserIcon size={16} /> My Account</Link>
+              <Link href="/account/orders" className={styles.mobileNavLink}><PackageIcon size={16} /> Orders</Link>
               <button
                 style={{ textAlign: 'left', color: 'var(--error)' }}
                 className={styles.mobileNavLink}

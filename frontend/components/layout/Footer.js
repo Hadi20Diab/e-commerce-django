@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { TwitterXIcon, InstagramIcon, FacebookIcon, PinterestIcon } from '../icons';
 import styles from './Footer.module.css';
 
 export default function Footer() {
@@ -13,10 +14,10 @@ export default function Footer() {
           </Link>
           <p>Premium products, curated for those who demand the finest. Experience shopping redefined.</p>
           <div className={styles.social}>
-            <span className={styles.socialLink} title="Twitter">𝕏</span>
-            <span className={styles.socialLink} title="Instagram">◎</span>
-            <span className={styles.socialLink} title="Facebook">f</span>
-            <span className={styles.socialLink} title="Pinterest">P</span>
+            <span className={styles.socialLink} title="Twitter"><TwitterXIcon size={16} /></span>
+            <span className={styles.socialLink} title="Instagram"><InstagramIcon size={16} /></span>
+            <span className={styles.socialLink} title="Facebook"><FacebookIcon size={16} /></span>
+            <span className={styles.socialLink} title="Pinterest"><PinterestIcon size={16} />PinterestIcon size={16} /></span>
           </div>
         </div>
 
