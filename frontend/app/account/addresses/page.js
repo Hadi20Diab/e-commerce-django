@@ -30,7 +30,7 @@ export default function AddressesPage() {
 
   const fetchAddresses = () => {
     authApi.getAddresses()
-      .then((res) => setAddresses(res.data))
+      .then((res) => setAddresses(res.data.results ?? res.data))
       .catch(() => {})
       .finally(() => setLoading(false));
   };
