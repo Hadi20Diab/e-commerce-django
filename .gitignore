@@ -12,7 +12,7 @@ dist/
 build/
 eggs/
 .eggs/
-lib/
+# lib/     ← intentionally NOT listed here to allow frontend/lib
 lib64/
 parts/
 sdist/
@@ -28,6 +28,10 @@ venv/
 env/
 ENV/
 .env/
+# (lib/ and lib64/ inside venv folders only — do NOT ignore frontend/lib)
+.venv/lib/
+venv/lib/
+venv/lib64/
 
 # Django
 *.log
