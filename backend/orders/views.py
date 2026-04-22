@@ -5,8 +5,12 @@ from django.db import transaction
 from django.conf import settings
 from django.utils import timezone
 from decimal import Decimal
-import stripe
 import requests as http_requests
+
+try:
+    import stripe
+except ImportError:
+    stripe = None
 
 from cart.models import Cart
 from .models import Order, OrderItem
