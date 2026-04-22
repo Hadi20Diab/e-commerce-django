@@ -10,12 +10,6 @@ import styles from '../auth.module.css';
 export default function RegisterPage() {
   const router = useRouter();
   const { user, register, loading: authLoading } = useAuth();
-
-  useEffect(() => {
-    if (!authLoading && user) router.replace('/');
-  }, [user, authLoading, router]);
-
-  if (authLoading || user) return null;
   const { addToast } = useToast();
 
   const [form, setForm] = useState({
@@ -24,6 +18,12 @@ export default function RegisterPage() {
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!authLoading && user) router.replace('/');
+  }, [user, authLoading, router]);
+
+  if (authLoading || user) return null;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
