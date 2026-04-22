@@ -70,36 +70,13 @@ function CheckoutInner() {
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
-  if (!user) {
-    return (
-      <div style={{ textAlign: 'center', padding: '80px 24px' }}>
-        <LockIcon size={40} color="var(--text-muted)" style={{ marginBottom: 16 }} />
-        <h2 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>Authentication Required</h2>
-        <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>Please sign in to proceed with checkout.</p>
-        <Link href="/auth/login" className="btn btn-primary">Sign In</Link>
-      </div>
-    );
-  }
-
+  // Derived values — computed before any early return so hooks stay stable
   const items = cart?.items ?? [];
-
-  if (items.length === 0) {
-    return (
-      <div style={{ textAlign: 'center', padding: '80px 24px' }}>
-        <CartIcon size={40} color="var(--text-muted)" style={{ marginBottom: 16 }} />
-        <h2 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>Your cart is empty</h2>
-        <Link href="/products" className="btn btn-primary" style={{ marginTop: '16px', display: 'inline-flex' }}>
-          Start Shopping
-        </Link>
-      </div>
-    );
-  }
-
   const shipping = 10;
   const subtotal = Number(cart?.total_price ?? 0);
   const total = subtotal + shipping;
 
-  const validate = () => {
+  const validate = useCallback(() => {
     const errs = {};
     if (!form.shipping_full_name.trim()) errs.shipping_full_name = 'Full name is required.';
     if (!form.shipping_street.trim()) errs.shipping_street = 'Street address is required.';
@@ -108,16 +85,16 @@ function CheckoutInner() {
     if (!form.shipping_postal_code.trim()) errs.shipping_postal_code = 'Postal code is required.';
     if (!form.shipping_country.trim()) errs.shipping_country = 'Country is required.';
     return errs;
-  };
+  }, [form]);
 
-  const handleChange = (e) => {
+  const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: value }));
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
-  };
+    setErrors((prev) => ({ ...prev, [name]: '' }));
+  }, []);
 
   // Mock / Stripe card submit
-  const handleSubmit = async (e) => {
+  const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
@@ -161,9 +138,9 @@ function CheckoutInner() {
     } finally {
       setSubmitting(false);
     }
-  };
+  }, [form, validate, stripe, elements, refreshCart, addToast, router]);
 
-  // PayPal callbacks
+  // PayPal callbacks — must be declared before any early returns
   const paypalCreateOrder = useCallback(async () => {
     const errs = validate();
     if (Object.keys(errs).length > 0) {
@@ -172,8 +149,7 @@ function CheckoutInner() {
     }
     const res = await ordersApi.paypalCreateOrder();
     return res.data.paypal_order_id;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form]);
+  }, [form, validate]);
 
   const paypalOnApprove = useCallback(async (data) => {
     setSubmitting(true);
@@ -191,12 +167,35 @@ function CheckoutInner() {
     } finally {
       setSubmitting(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form]);
+  }, [form, refreshCart, addToast, router]);
 
   const paypalOnError = useCallback((err) => {
     addToast('PayPal error: ' + (err?.message ?? 'Something went wrong.'), 'error');
   }, [addToast]);
+
+  // ── Early returns (after ALL hooks) ──────────────────────────────────────
+  if (!user) {
+    return (
+      <div style={{ textAlign: 'center', padding: '80px 24px' }}>
+        <LockIcon size={40} color="var(--text-muted)" style={{ marginBottom: 16 }} />
+        <h2 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>Authentication Required</h2>
+        <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>Please sign in to proceed with checkout.</p>
+        <Link href="/auth/login" className="btn btn-primary">Sign In</Link>
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <div style={{ textAlign: 'center', padding: '80px 24px' }}>
+        <CartIcon size={40} color="var(--text-muted)" style={{ marginBottom: 16 }} />
+        <h2 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>Your cart is empty</h2>
+        <Link href="/products" className="btn btn-primary" style={{ marginTop: '16px', display: 'inline-flex' }}>
+          Start Shopping
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.page}>
