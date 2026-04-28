@@ -204,6 +204,43 @@
   white-space: nowrap;
 }
 
+.couponSection {
+  padding: var(--space-sm) 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.couponRow {
+  display: flex;
+  align-items: center;
+}
+
+.couponApplied {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: var(--success-bg, #f0fdf4);
+  border: 1px solid var(--success, #16a34a);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  color: var(--success, #16a34a);
+}
+
+.couponRemove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 1rem;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.couponRemove:hover {
+  color: var(--error, #dc2626);
+}
+
 .summaryBreakdown {
   display: flex;
   flex-direction: column;
@@ -263,10 +300,17 @@
 .cardElementWrapper {
   margin-top: var(--space-lg);
   padding: 14px 16px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
   background: var(--bg-surface);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
   transition: border-color var(--transition-fast);
+}
+
+.cardElementWrapper > * {
+  width: 100%;
 }
 
 .cardElementWrapper:focus-within {

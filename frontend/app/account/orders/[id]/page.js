@@ -10,20 +10,21 @@ import styles from '../../account.module.css';
 export default function OrderDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
+    if (authLoading) return;
     if (!user) { router.push('/auth/login'); return; }
     ordersApi.detail(params.id)
       .then((res) => setOrder(res.data))
       .catch((err) => { if (err.response?.status === 404) setNotFound(true); })
       .finally(() => setLoading(false));
-  }, [user, params.id, router]);
+  }, [authLoading, user, params.id, router]);
 
-  if (!user) return null;
+  if (authLoading || !user) return null;
 
   const sidebarInitial = (user.first_name?.[0] ?? user.email[0]).toUpperCase();
 
@@ -40,6 +41,7 @@ export default function OrderDetailPage() {
             <Link href="/account" className={styles.navLink}>Profile</Link>
             <Link href="/account/orders" className={`${styles.navLink} ${styles.navLinkActive}`}>My Orders</Link>
             <Link href="/account/addresses" className={styles.navLink}>Addresses</Link>
+            <Link href="/account/wishlist" className={styles.navLink}>Wishlist</Link>
           </nav>
         </aside>
 
@@ -96,15 +98,32 @@ export default function OrderDetailPage() {
                     <th style={{ textAlign: 'center' }}>Qty</th>
                     <th style={{ textAlign: 'right' }}>Unit Price</th>
                     <th style={{ textAlign: 'right' }}>Subtotal</th>
+                    <th style={{ textAlign: 'center' }}>Review</th>
                   </tr>
                 </thead>
                 <tbody>
                   {(order.items ?? []).map((item) => (
                     <tr key={item.id}>
-                      <td className={styles.itemName}>{item.product_name}</td>
+                      <td className={styles.itemName}>
+                        {item.product_slug ? (
+                          <Link href={`/products/${item.product_slug}`} style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 500 }}>
+                            {item.product_name}
+                          </Link>
+                        ) : item.product_name}
+                      </td>
                       <td style={{ textAlign: 'center' }}>{item.quantity}</td>
-                      <td style={{ textAlign: 'right' }}>{formatPrice(item.price)}</td>
+                      <td style={{ textAlign: 'right' }}>{formatPrice(item.unit_price)}</td>
                       <td style={{ textAlign: 'right' }}>{formatPrice(item.subtotal)}</td>
+                      <td style={{ textAlign: 'center' }}>
+                        {item.product_slug && order.is_paid && (
+                          <Link
+                            href={`/products/${item.product_slug}#reviews`}
+                            style={{ fontSize: '0.75rem', padding: '4px 12px', background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: '6px', color: 'var(--text-secondary)', textDecoration: 'none', whiteSpace: 'nowrap', display: 'inline-block', transition: 'all 0.15s' }}
+                          >
+                            Review
+                          </Link>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -115,12 +134,22 @@ export default function OrderDetailPage() {
                 <tbody>
                   <tr>
                     <td>Subtotal</td>
-                    <td style={{ textAlign: 'right' }}>{formatPrice(Number(order.total_price) - 10)}</td>
+                    <td style={{ textAlign: 'right' }}>{formatPrice(Number(order.total_price) - 10 + Number(order.discount_amount ?? 0))}</td>
                   </tr>
                   <tr>
                     <td>Shipping</td>
                     <td style={{ textAlign: 'right' }}>{formatPrice(10)}</td>
                   </tr>
+                  {Number(order.discount_amount) > 0 && (
+                    <tr>
+                      <td style={{ color: 'var(--success, #16a34a)' }}>
+                        Discount{order.coupon_code ? ` (${order.coupon_code})` : ''}
+                      </td>
+                      <td style={{ textAlign: 'right', color: 'var(--success, #16a34a)' }}>
+                        −{formatPrice(order.discount_amount)}
+                      </td>
+                    </tr>
+                  )}
                   <tr>
                     <td style={{ color: 'var(--text-primary)' }}>Total</td>
                     <td style={{ textAlign: 'right' }}>{formatPrice(order.total_price)}</td>

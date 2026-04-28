@@ -35,11 +35,12 @@ const CARD_ELEMENT_OPTIONS = {
   style: {
     base: {
       fontSize: '15px',
-      color: '#1a1a1a',
+      color: '#f1f2f6',
       fontFamily: 'inherit',
-      '::placeholder': { color: '#9ca3af' },
+      iconColor: '#9a9cb0',
+      '::placeholder': { color: '#5a5c72' },
     },
-    invalid: { color: '#e53e3e' },
+    invalid: { color: '#f87171', iconColor: '#f87171' },
   },
 };
 
@@ -70,11 +71,18 @@ function CheckoutInner() {
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
+  // Coupon state
+  const [couponInput, setCouponInput] = useState('');
+  const [coupon, setCoupon] = useState(null); // { code, discount_amount }
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState('');
+
   // Derived values — computed before any early return so hooks stay stable
   const items = cart?.items ?? [];
   const shipping = 10;
   const subtotal = Number(cart?.total_price ?? 0);
-  const total = subtotal + shipping;
+  const discount = coupon ? Number(coupon.discount_amount) : 0;
+  const total = subtotal + shipping - discount;
 
   const validate = useCallback(() => {
     const errs = {};
@@ -100,8 +108,9 @@ function CheckoutInner() {
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     setSubmitting(true);
     try {
+      const orderPayload = { ...form, coupon_code: coupon?.code ?? '' };
       if (form.payment_method === 'mock') {
-        const res = await ordersApi.create(form);
+        const res = await ordersApi.create(orderPayload);
         await refreshCart();
         addToast('Order placed successfully!', 'success');
         router.push(`/account/orders/${res.data.id}`);
@@ -128,7 +137,7 @@ function CheckoutInner() {
         }
 
         // 3. Create Django order (server verifies intent)
-        const res = await ordersApi.create({ ...form, stripe_payment_intent_id: payment_intent_id });
+        const res = await ordersApi.create({ ...orderPayload, stripe_payment_intent_id: payment_intent_id });
         await refreshCart();
         addToast('Order placed successfully!', 'success');
         router.push(`/account/orders/${res.data.id}`);
@@ -151,11 +160,27 @@ function CheckoutInner() {
     return res.data.paypal_order_id;
   }, [form, validate]);
 
+  const handleApplyCoupon = useCallback(async () => {
+    if (!couponInput.trim()) return;
+    setCouponLoading(true);
+    setCouponError('');
+    try {
+      const res = await ordersApi.applyCoupon({ code: couponInput.trim().toUpperCase(), order_total: subtotal });
+      setCoupon({ code: res.data.code, discount_amount: res.data.discount_amount });
+      setCouponInput('');
+    } catch (err) {
+      setCouponError(err?.response?.data?.error ?? 'Invalid coupon code.');
+    } finally {
+      setCouponLoading(false);
+    }
+  }, [couponInput, subtotal]);
+
   const paypalOnApprove = useCallback(async (data) => {
     setSubmitting(true);
     try {
       const res = await ordersApi.paypalCapture({
         ...form,
+        coupon_code: coupon?.code ?? '',
         payment_method: 'paypal',
         paypal_order_id: data.orderID,
       });
@@ -388,6 +413,36 @@ function CheckoutInner() {
                 ))}
               </div>
 
+              {/* Coupon input */}
+              <div className={styles.couponSection}>
+                <div className={styles.couponRow}>
+                  <input
+                    className="formInput"
+                    value={couponInput}
+                    onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCouponError(''); }}
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleApplyCoupon())}
+                    placeholder="Coupon code"
+                    style={{ flex: 1, marginRight: 8 }}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={handleApplyCoupon}
+                    disabled={couponLoading || !couponInput.trim()}
+                    style={{ whiteSpace: 'nowrap' }}
+                  >
+                    {couponLoading ? 'Applying…' : 'Apply'}
+                  </button>
+                </div>
+                {couponError && <p className="formError" style={{ margin: '4px 0 0' }}>{couponError}</p>}
+                {coupon && (
+                  <div className={styles.couponApplied}>
+                    <span>✓ <strong>{coupon.code}</strong> applied — saving {formatPrice(coupon.discount_amount)}</span>
+                    <button type="button" className={styles.couponRemove} onClick={() => setCoupon(null)}>✕</button>
+                  </div>
+                )}
+              </div>
+
               <div className={styles.summaryBreakdown}>
                 <div className={styles.summaryRow}>
                   <span>Subtotal</span>
@@ -397,6 +452,12 @@ function CheckoutInner() {
                   <span>Shipping</span>
                   <span>{formatPrice(shipping)}</span>
                 </div>
+                {discount > 0 && (
+                  <div className={styles.summaryRow} style={{ color: 'var(--success, #16a34a)' }}>
+                    <span>Discount {coupon?.code && `(${coupon.code})`}</span>
+                    <span>−{formatPrice(discount)}</span>
+                  </div>
+                )}
               </div>
 
               <div className={styles.summaryTotal}>

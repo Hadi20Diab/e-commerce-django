@@ -34,6 +34,7 @@ export default function OrdersPage() {
             <Link href="/account" className={styles.navLink}>Profile</Link>
             <Link href="/account/orders" className={`${styles.navLink} ${styles.navLinkActive}`}>My Orders</Link>
             <Link href="/account/addresses" className={styles.navLink}>Addresses</Link>
+            <Link href="/account/wishlist" className={styles.navLink}>Wishlist</Link>
           </nav>
         </aside>
 
