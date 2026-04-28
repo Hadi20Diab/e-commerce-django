@@ -1,5 +1,7 @@
 from django.db import models
 from django.utils.text import slugify
+from django.core.validators import MinValueValidator, MaxValueValidator
+from django.conf import settings
 
 
 class Category(models.Model):
@@ -64,6 +66,16 @@ class Product(models.Model):
             image = self.images.first()
         return image
 
+    @property
+    def avg_rating(self):
+        from django.db.models import Avg
+        result = self.reviews.filter(is_approved=True).aggregate(avg=Avg('rating'))
+        return round(result['avg'] or 0, 1)
+
+    @property
+    def review_count(self):
+        return self.reviews.filter(is_approved=True).count()
+
 
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
@@ -100,3 +112,22 @@ class Banner(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Review(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='reviews')
+    rating = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    title = models.CharField(max_length=200, blank=True)
+    body = models.TextField()
+    is_approved = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [('product', 'user')]
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.user} — {self.product.name} ({self.rating}/5)'

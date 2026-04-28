@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Order, OrderItem
+from .models import Order, OrderItem, Coupon
 from django.db.models import Sum, Count
 from django.utils.html import format_html
 
@@ -35,3 +35,11 @@ class OrderAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('user')
+
+
+@admin.register(Coupon)
+class CouponAdmin(admin.ModelAdmin):
+    list_display = ('code', 'discount_type', 'discount_value', 'min_order_amount', 'max_uses', 'times_used', 'is_active', 'expires_at')
+    list_filter = ('discount_type', 'is_active')
+    search_fields = ('code',)
+    list_editable = ('is_active',)

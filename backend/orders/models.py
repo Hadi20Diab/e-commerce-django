@@ -1,6 +1,46 @@
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
 from products.models import Product
+
+
+class Coupon(models.Model):
+    DISCOUNT_TYPES = [('percentage', 'Percentage'), ('fixed', 'Fixed Amount')]
+
+    code = models.CharField(max_length=50, unique=True, db_index=True)
+    discount_type = models.CharField(max_length=10, choices=DISCOUNT_TYPES, default='percentage')
+    discount_value = models.DecimalField(max_digits=10, decimal_places=2)
+    min_order_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    max_uses = models.PositiveIntegerField(null=True, blank=True)
+    times_used = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.code
+
+    def is_valid(self, order_total):
+        from decimal import Decimal
+        if not self.is_active:
+            return False, 'This coupon is not active.'
+        if self.expires_at and self.expires_at < timezone.now():
+            return False, 'This coupon has expired.'
+        if self.max_uses is not None and self.times_used >= self.max_uses:
+            return False, 'This coupon has reached its usage limit.'
+        if Decimal(str(order_total)) < self.min_order_amount:
+            return False, f'Minimum order amount for this coupon is ${self.min_order_amount}.'
+        return True, None
+
+    def calculate_discount(self, order_total):
+        from decimal import Decimal
+        total = Decimal(str(order_total))
+        if self.discount_type == 'percentage':
+            return min((self.discount_value / 100) * total, total)
+        return min(self.discount_value, total)
 
 
 class Order(models.Model):
@@ -36,9 +76,12 @@ class Order(models.Model):
     # Stored totals (never recalculated)
     subtotal = models.DecimalField(max_digits=10, decimal_places=2)
     shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
 
     notes = models.TextField(blank=True)
+    stripe_payment_intent_id = models.CharField(max_length=200, blank=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -65,3 +108,17 @@ class OrderItem(models.Model):
         if self.unit_price is None or self.quantity is None:
             return None
         return self.unit_price * self.quantity
+
+
+class StripeWebhookEvent(models.Model):
+    """Tracks processed Stripe event IDs to guarantee idempotency."""
+    stripe_event_id = models.CharField(max_length=200, unique=True)
+    event_type = models.CharField(max_length=100)
+    processed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-processed_at']
+
+    def __str__(self):
+        return f'{self.event_type} — {self.stripe_event_id}'
+

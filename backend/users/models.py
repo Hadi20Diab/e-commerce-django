@@ -72,3 +72,16 @@ class Address(models.Model):
                 user=self.user, address_type=self.address_type, is_default=True
             ).exclude(pk=self.pk).update(is_default=False)
         super().save(*args, **kwargs)
+
+
+class WishlistItem(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='wishlist')
+    product = models.ForeignKey('products.Product', on_delete=models.CASCADE)
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [('user', 'product')]
+        ordering = ['-added_at']
+
+    def __str__(self):
+        return f'{self.user.email} → {self.product.name}'

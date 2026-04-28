@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
-from .models import Address
+from .models import Address, WishlistItem
+from products.serializers import ProductListSerializer
 
 User = get_user_model()
 
@@ -59,3 +60,13 @@ class AddressSerializer(serializers.ModelSerializer):
         model = Address
         fields = '__all__'
         read_only_fields = ('user',)
+
+
+class WishlistItemSerializer(serializers.ModelSerializer):
+    product = ProductListSerializer(read_only=True)
+    product_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = WishlistItem
+        fields = ('id', 'product', 'product_id', 'added_at')
+        read_only_fields = ('id', 'added_at')
