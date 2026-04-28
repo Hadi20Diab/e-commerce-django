@@ -473,3 +473,81 @@
   .heroBtns { flex-direction: column; }
   .ctaBanner { padding: var(--space-xl); }
 }
+
+/* ── Welcome Section (logged-in homepage) ── */
+.welcomeSection {
+  padding: var(--space-3xl) 0;
+  background: linear-gradient(135deg, var(--bg-surface) 0%, rgba(255,87,34,0.05) 100%);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.welcomeInner {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xl);
+}
+
+.welcomeText {}
+
+.welcomeTitle {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin-bottom: var(--space-md);
+}
+
+.welcomeTitle span {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.welcomeDesc {
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  max-width: 520px;
+  margin-bottom: var(--space-xl);
+}
+
+.welcomeStats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+.welcomeStat {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md) var(--space-lg);
+  flex: 1;
+  min-width: 160px;
+}
+
+.welcomeStatIcon {
+  font-size: 1.4rem;
+}
+
+.welcomeStatLabel {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.welcomeStatSub {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+

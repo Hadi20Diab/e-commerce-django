@@ -78,6 +78,7 @@ export const ordersApi = {
   create: (data) => api.post('/orders/create/', data),
   list: () => api.get('/orders/'),
   detail: (id) => api.get(`/orders/${id}/`),
+  applyCoupon: (data) => api.post('/orders/apply-coupon/', data),
   // Stripe
   stripeCreateIntent: () => api.post('/orders/stripe/create-intent/'),
   // PayPal
@@ -88,4 +89,18 @@ export const ordersApi = {
 // ── Contact ───────────────────────────────────────
 export const contactApi = {
   submit: (data) => api.post('/contact/', data),
+};
+
+// ── Reviews ───────────────────────────────────────
+export const reviewsApi = {
+  list: (slug) => api.get(`/products/${slug}/reviews/`),
+  create: (slug, data) => api.post(`/products/${slug}/reviews/`, data),
+};
+
+// ── Wishlist ──────────────────────────────────────
+export const wishlistApi = {
+  list: () => api.get('/auth/wishlist/'),
+  add: (product_id) => api.post('/auth/wishlist/', { product_id }),
+  remove: (product_id) => api.delete(`/auth/wishlist/${product_id}/remove/`),
+  check: (product_id) => api.get(`/auth/wishlist/${product_id}/check/`),
 };

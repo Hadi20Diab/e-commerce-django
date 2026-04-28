@@ -89,6 +89,7 @@ export default function AccountPage() {
             <Link href="/account" className={`${styles.navLink} ${styles.navLinkActive}`}>Profile</Link>
             <Link href="/account/orders" className={styles.navLink}>My Orders</Link>
             <Link href="/account/addresses" className={styles.navLink}>Addresses</Link>
+            <Link href="/account/wishlist" className={styles.navLink}>Wishlist</Link>
           </nav>
         </aside>
 

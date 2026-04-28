@@ -3,24 +3,67 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { productsApi } from '../../../lib/api';
+import { productsApi, reviewsApi } from '../../../lib/api';
 import { useAuth } from '../../../context/AuthContext';
 import { useCart } from '../../../context/CartContext';
 import { useToast } from '../../../context/ToastContext';
+import { useWishlist } from '../../../context/WishlistContext';
 import { formatPrice, getImageUrl, extractErrors } from '../../../lib/utils';
 import styles from './detail.module.css';
+
+function StarRow({ rating, size = 16, color = '#f59e0b' }) {
+  return (
+    <span style={{ display: 'inline-flex', gap: 2 }}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <svg key={n} width={size} height={size} viewBox="0 0 24 24" fill={n <= rating ? color : 'none'} stroke={color} strokeWidth={1.5}>
+          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+        </svg>
+      ))}
+    </span>
+  );
+}
+
+function StarPicker({ value, onChange }) {
+  const [hover, setHover] = useState(0);
+  return (
+    <span style={{ display: 'inline-flex', gap: 4, cursor: 'pointer' }}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <svg
+          key={n}
+          width={24} height={24} viewBox="0 0 24 24"
+          fill={n <= (hover || value) ? '#f59e0b' : 'none'}
+          stroke="#f59e0b" strokeWidth={1.5}
+          onMouseEnter={() => setHover(n)}
+          onMouseLeave={() => setHover(0)}
+          onClick={() => onChange(n)}
+          style={{ transition: 'fill 0.1s' }}
+        >
+          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+        </svg>
+      ))}
+    </span>
+  );
+}
 
 export default function ProductDetailPage() {
   const { slug } = useParams();
   const { user } = useAuth();
   const { addToCart } = useCart();
   const { addToast } = useToast();
+  const { wishlistIds, toggleWishlist } = useWishlist();
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [adding, setAdding] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+
+  // Reviews state
+  const [reviews, setReviews] = useState([]);
+  const [reviewForm, setReviewForm] = useState({ rating: 0, title: '', body: '' });
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewError, setReviewError] = useState('');
 
   useEffect(() => {
     if (!slug) return;
@@ -28,7 +71,18 @@ export default function ProductDetailPage() {
       .then((r) => { setProduct(r.data); })
       .catch(() => setProduct(null))
       .finally(() => setLoading(false));
+    reviewsApi.list(slug)
+      .then((r) => {
+        const items = r.data.results ?? r.data;
+        setReviews(items);
+      })
+      .catch(() => {});
   }, [slug]);
+
+  // Derived flags from product API (server checks purchase history)
+  const isWishlisted = wishlistIds.has(product?.id);
+  const userHasPurchased = product?.user_has_purchased ?? false;
+  const userHasReviewed = product?.user_has_reviewed ?? false;
 
   const handleAddToCart = async () => {
     if (!user) { addToast('Please sign in to add to cart.', 'warning'); return; }
@@ -40,6 +94,38 @@ export default function ProductDetailPage() {
       addToast(extractErrors(err), 'error');
     } finally {
       setAdding(false);
+    }
+  };
+
+  const handleWishlist = async () => {
+    if (!user) { addToast('Please sign in to save items.', 'warning'); return; }
+    setWishlistLoading(true);
+    try {
+      const added = await toggleWishlist(product.id);
+      addToast(added ? 'Added to wishlist!' : 'Removed from wishlist.', 'success');
+    } catch {
+      addToast('Could not update wishlist.', 'error');
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    if (!reviewForm.rating) { setReviewError('Please select a star rating.'); return; }
+    if (!reviewForm.body.trim()) { setReviewError('Review body is required.'); return; }
+    setReviewSubmitting(true);
+    setReviewError('');
+    try {
+      const res = await reviewsApi.create(slug, reviewForm);
+      setReviews((prev) => [res.data, ...prev]);
+      setProduct((p) => p ? { ...p, user_has_reviewed: true } : p);
+      setReviewForm({ rating: 0, title: '', body: '' });
+      addToast('Review submitted!', 'success');
+    } catch (err) {
+      setReviewError(extractErrors(err));
+    } finally {
+      setReviewSubmitting(false);
     }
   };
 
@@ -204,6 +290,22 @@ export default function ProductDetailPage() {
                 >
                   {adding ? 'Adding to Cart…' : '🛒 Add to Cart'}
                 </button>
+
+                <button
+                  className={`${styles.wishlistBtn} ${isWishlisted ? styles.wishlistBtnActive : ''}`}
+                  onClick={handleWishlist}
+                  disabled={wishlistLoading}
+                  aria-label={isWishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
+                  title={isWishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
+                >
+                  <svg width={20} height={20} viewBox="0 0 24 24"
+                    fill={isWishlisted ? '#ef4444' : 'none'}
+                    stroke={isWishlisted ? '#ef4444' : 'currentColor'}
+                    strokeWidth={1.8}
+                  >
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                  </svg>
+                </button>
               </div>
             )}
 
@@ -221,6 +323,89 @@ export default function ProductDetailPage() {
               ))}
             </div>
           </div>
+        </div>
+
+        {/* ── Reviews Section ─────────────────────────────── */}
+        <div className={styles.reviewsSection}>
+          <h2 className={styles.reviewsTitle}>
+            Customer Reviews
+            {product.review_count > 0 && (
+              <span className={styles.reviewsCount}> ({product.review_count})</span>
+            )}
+            {product.avg_rating > 0 && (
+              <span style={{ marginLeft: 12, verticalAlign: 'middle' }}>
+                <StarRow rating={Math.round(product.avg_rating)} />
+                <span style={{ marginLeft: 6, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                  {Number(product.avg_rating).toFixed(1)}
+                </span>
+              </span>
+            )}
+          </h2>
+
+          {/* Write a review */}
+          {user && userHasPurchased && !userHasReviewed && (
+            <form className={styles.reviewForm} onSubmit={handleReviewSubmit}>
+              <h3 className={styles.reviewFormTitle}>Write a Review</h3>
+              <div className={styles.reviewFormRating}>
+                <label className={styles.reviewFormLabel}>Your Rating *</label>
+                <StarPicker value={reviewForm.rating} onChange={(n) => setReviewForm((f) => ({ ...f, rating: n }))} />
+              </div>
+              <input
+                className={`formInput ${styles.reviewInput}`}
+                placeholder="Review title (optional)"
+                value={reviewForm.title}
+                onChange={(e) => setReviewForm((f) => ({ ...f, title: e.target.value }))}
+              />
+              <textarea
+                className={`formInput ${styles.reviewInput}`}
+                placeholder="Share your experience with this product…"
+                value={reviewForm.body}
+                onChange={(e) => setReviewForm((f) => ({ ...f, body: e.target.value }))}
+                rows={4}
+                style={{ resize: 'vertical' }}
+                required
+              />
+              {reviewError && <p className="formError">{reviewError}</p>}
+              <button type="submit" className={`btn btn-primary ${styles.reviewSubmitBtn}`} disabled={reviewSubmitting}>
+                {reviewSubmitting ? 'Submitting…' : 'Submit Review'}
+              </button>
+            </form>
+          )}
+          {user && userHasPurchased && userHasReviewed && (
+            <div className={styles.reviewedBadge}>
+              ✓ You've reviewed this product
+            </div>
+          )}
+          {user && !userHasPurchased && (
+            <div className={styles.reviewGateNote}>
+              Purchase this product to leave a review.
+            </div>
+          )}
+          {!user && (
+            <p className={styles.reviewLoginNote}>
+              <Link href="/auth/login">Sign in</Link> to leave a review.
+            </p>
+          )}
+
+          {/* Reviews list */}
+          {reviews.length === 0 ? (
+            <p style={{ color: 'var(--text-muted)', marginTop: 16 }}>No reviews yet. Be the first!</p>
+          ) : (
+            <div className={styles.reviewsList}>
+              {reviews.map((rv) => (
+                <div key={rv.id} className={styles.reviewCard}>
+                  <div className={styles.reviewHeader}>
+                    <StarRow rating={rv.rating} size={14} />
+                    {rv.title && <strong className={styles.reviewTitle}>{rv.title}</strong>}
+                    <span className={styles.reviewMeta}>
+                      by {rv.user_name} · {new Date(rv.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p className={styles.reviewBody}>{rv.body}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

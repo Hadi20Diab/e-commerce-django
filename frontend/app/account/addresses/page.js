@@ -9,7 +9,8 @@ import { extractErrors } from '../../../lib/utils';
 import styles from '../account.module.css';
 
 const BLANK_FORM = {
-  street: '', city: '', state: '', postal_code: '', country: '', is_default: false,
+  full_name: '', street_address: '', city: '', state: '', postal_code: '', country: '',
+  address_type: 'shipping', is_default: false,
 };
 
 export default function AddressesPage() {
@@ -84,6 +85,7 @@ export default function AddressesPage() {
             <Link href="/account" className={styles.navLink}>Profile</Link>
             <Link href="/account/orders" className={styles.navLink}>My Orders</Link>
             <Link href="/account/addresses" className={`${styles.navLink} ${styles.navLinkActive}`}>Addresses</Link>
+            <Link href="/account/wishlist" className={styles.navLink}>Wishlist</Link>
           </nav>
         </aside>
 
@@ -99,8 +101,12 @@ export default function AddressesPage() {
             {showForm && (
               <form onSubmit={handleSave} className={styles.form} style={{ marginBottom: 'var(--space-xl)', padding: 'var(--space-lg)', background: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-default)' }}>
                 <div className="formGroup">
+                  <label className="formLabel">Full Name</label>
+                  <input name="full_name" className="formInput" value={form.full_name} onChange={handleChange} placeholder="John Doe" required />
+                </div>
+                <div className="formGroup">
                   <label className="formLabel">Street Address</label>
-                  <input name="street" className="formInput" value={form.street} onChange={handleChange} placeholder="123 Main Street" required />
+                  <input name="street_address" className="formInput" value={form.street_address} onChange={handleChange} placeholder="123 Main Street" required />
                 </div>
                 <div className={styles.twoCol}>
                   <div className="formGroup">
@@ -145,7 +151,8 @@ export default function AddressesPage() {
                   <div key={addr.id} className={`${styles.addressCard} ${addr.is_default ? styles.addressCardDefault : ''}`}>
                     {addr.is_default && <span className={styles.addressBadge}>Default</span>}
                     <div className={styles.addressText}>
-                      {addr.street}<br />
+                      <strong>{addr.full_name}</strong><br />
+                      {addr.street_address}<br />
                       {addr.city}, {addr.state} {addr.postal_code}<br />
                       {addr.country}
                     </div>

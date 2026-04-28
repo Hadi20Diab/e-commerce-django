@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import {
   CartIcon, UserIcon, ChevronDownIcon, PackageIcon,
-  MapPinIcon, LogOutIcon, MenuIcon, XIcon,
+  MapPinIcon, LogOutIcon, MenuIcon, XIcon, HeartIcon,
 } from '../icons';
 import styles from './Navbar.module.css';
 
@@ -120,6 +120,9 @@ export default function Navbar() {
                       <Link href="/account/addresses" className={styles.dropdownItem}>
                         <MapPinIcon size={15} /> Addresses
                       </Link>
+                      <Link href="/account/wishlist" className={styles.dropdownItem}>
+                        <HeartIcon size={15} /> Wishlist
+                      </Link>
                       <div className={styles.dropdownDivider} />
                       <button
                         className={`${styles.dropdownItem} ${styles.dropdownLogout}`}
@@ -170,6 +173,7 @@ export default function Navbar() {
             <>
               <Link href="/account" className={styles.mobileNavLink}><UserIcon size={16} /> My Account</Link>
               <Link href="/account/orders" className={styles.mobileNavLink}><PackageIcon size={16} /> Orders</Link>
+              <Link href="/account/wishlist" className={styles.mobileNavLink}><HeartIcon size={16} /> Wishlist</Link>
               <button
                 style={{ textAlign: 'left', color: 'var(--error)' }}
                 className={styles.mobileNavLink}

@@ -216,3 +216,56 @@ export const PinterestIcon = ({ size = 20, color = 'currentColor', className = '
 export const FlaskIcon = icon(
   <><path d="M9 3h6v2l3 7H6L9 5V3z" /><path d="M6 12v7a2 2 0 002 2h8a2 2 0 002-2v-7" /><line x1="9" y1="3" x2="15" y2="3" /></>
 );
+
+// ── Category Icons ────────────────────────────────────────────────────────────
+export const ElectronicsIcon = icon(
+  <><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></>
+);
+
+export const ClothingIcon = icon(
+  <><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.57a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.57a2 2 0 00-1.34-2.23z"/></>
+);
+
+export const FurnitureIcon = icon(
+  <><path d="M20 9V6a2 2 0 00-2-2H6a2 2 0 00-2 2v3"/><path d="M2 11v5a2 2 0 002 2h16a2 2 0 002-2v-5a2 2 0 00-4 0v2H6v-2a2 2 0 00-4 0z"/><line x1="6" y1="20" x2="6" y2="22"/><line x1="18" y1="20" x2="18" y2="22"/></>
+);
+
+export const BooksIcon = icon(
+  <><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></>
+);
+
+export const ShoesIcon = icon(
+  <><path d="M2 18a1 1 0 001 1h18a1 1 0 001-1v-2a1 1 0 00-.77-.97L18 14l-2-6H8L6 14l-3.23.03A1 1 0 002 15v3z"/><path d="M8 8V6a2 2 0 014 0v2"/></>
+);
+
+export const BagsIcon = icon(
+  <><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></>
+);
+
+export const BeautyIcon = icon(
+  <><path d="M12 2L9.5 9H2l6 4.5-2.5 7L12 16l6.5 4.5-2.5-7L22 9h-7.5L12 2z"/></>
+);
+
+export const SportsIcon = icon(
+  <><circle cx="12" cy="12" r="10"/><path d="M4.93 4.93l4.24 4.24"/><path d="M14.83 9.17l4.24-4.24"/><path d="M14.83 14.83l4.24 4.24"/><path d="M9.17 14.83l-4.24 4.24"/><circle cx="12" cy="12" r="4"/></>
+);
+
+export const FoodIcon = icon(
+  <><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></>
+);
+
+export const ToysIcon = icon(
+  <><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v11m0 0H5a2 2 0 01-2-2V9m6 5h10a2 2 0 002-2V9m0 0H3"/></>
+);
+
+export const JewelryIcon = icon(
+  <><path d="M6 3h12l4 6-10 13L2 9l4-6z"/><path d="M11 3L8 9l4 13 4-13-3-6"/><line x1="2" y1="9" x2="22" y2="9"/></>
+);
+
+export const FashionIcon = icon(
+  <><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.57a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.57a2 2 0 00-1.34-2.23z"/></>
+);
+
+export const TicketIcon = icon(
+  <><path d="M15 5v2M15 11v2M15 17v2M5 5h14a2 2 0 012 2v3a2 2 0 000 4v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3a2 2 0 000-4V7a2 2 0 012-2z"/></>
+);
