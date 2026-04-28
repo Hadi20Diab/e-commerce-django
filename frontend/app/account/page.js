@@ -10,7 +10,7 @@ import styles from './account.module.css';
 
 export default function AccountPage() {
   const router = useRouter();
-  const { user, refreshUser } = useAuth();
+  const { user, loading: authLoading, refreshUser } = useAuth();
   const { addToast } = useToast();
 
   const [form, setForm] = useState({ first_name: '', last_name: '', phone: '', bio: '' });
@@ -20,6 +20,7 @@ export default function AccountPage() {
   const [changingPw, setChangingPw] = useState(false);
 
   useEffect(() => {
+    if (authLoading) return;
     if (!user) { router.push('/auth/login'); return; }
     setForm({
       first_name: user.first_name || '',
@@ -29,7 +30,7 @@ export default function AccountPage() {
     });
   }, [user, router]);
 
-  if (!user) return null;
+  if (authLoading || !user) return null;
 
   const initials = `${user.first_name?.[0] ?? ''}${user.last_name?.[0] ?? ''}`.toUpperCase() || user.email[0].toUpperCase();
 
