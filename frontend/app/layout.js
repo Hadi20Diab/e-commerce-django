@@ -2,6 +2,7 @@ import '../styles/globals.css';
 import { AuthProvider } from '../context/AuthContext';
 import { CartProvider } from '../context/CartContext';
 import { ToastProvider } from '../context/ToastContext';
+import { WishlistProvider } from '../context/WishlistContext';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 
@@ -25,13 +26,15 @@ export default function RootLayout({ children }) {
       <body>
         <AuthProvider>
           <CartProvider>
-            <ToastProvider>
-              <Navbar />
-              <main className="pageWrapper">
-                {children}
-              </main>
-              <Footer />
-            </ToastProvider>
+            <WishlistProvider>
+              <ToastProvider>
+                <Navbar />
+                <main className="pageWrapper">
+                  {children}
+                </main>
+                <Footer />
+              </ToastProvider>
+            </WishlistProvider>
           </CartProvider>
         </AuthProvider>
       </body>

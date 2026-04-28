@@ -49,6 +49,63 @@
   gap: 4px;
 }
 
+.wishlistBtn {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-muted);
+  opacity: 0;
+  transition: opacity 0.2s, color 0.2s, transform 0.15s;
+  z-index: 2;
+}
+
+.card:hover .wishlistBtn,
+.wishlistActive {
+  opacity: 1 !important;
+}
+
+.wishlistActive {
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+.wishlistBtn:hover {
+  transform: scale(1.1);
+  color: #ef4444;
+}
+
+.wishlistBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ratingRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.stars {
+  font-size: 0.8rem;
+  color: #f59e0b;
+  letter-spacing: 1px;
+}
+
+.reviewCount {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
 .badgeFeatured {
   padding: 3px 10px;
   background: linear-gradient(135deg, var(--primary), var(--primary-dark));
