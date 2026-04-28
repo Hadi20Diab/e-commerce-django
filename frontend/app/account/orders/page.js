@@ -9,16 +9,17 @@ import styles from '../account.module.css';
 
 export default function OrdersPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (authLoading) return;
     if (!user) { router.push('/auth/login'); return; }
     ordersApi.list().then((res) => setOrders(res.data.results ?? res.data)).catch(() => {}).finally(() => setLoading(false));
-  }, [user, router]);
+  }, [authLoading, user, router]);
 
-  if (!user) return null;
+  if (authLoading || !user) return null;
 
   return (
     <div className={styles.page}>

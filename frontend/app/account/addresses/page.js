@@ -14,7 +14,7 @@ const BLANK_FORM = {
 
 export default function AddressesPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { addToast } = useToast();
 
   const [addresses, setAddresses] = useState([]);
@@ -24,9 +24,10 @@ export default function AddressesPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    if (authLoading) return;
     if (!user) { router.push('/auth/login'); return; }
     fetchAddresses();
-  }, [user, router]);
+  }, [authLoading, user, router]);
 
   const fetchAddresses = () => {
     authApi.getAddresses()
@@ -35,7 +36,7 @@ export default function AddressesPage() {
       .finally(() => setLoading(false));
   };
 
-  if (!user) return null;
+  if (authLoading || !user) return null;
 
   const sidebarInitial = (user.first_name?.[0] ?? user.email[0]).toUpperCase();
 
