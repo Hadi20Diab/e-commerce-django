@@ -214,17 +214,29 @@ class Command(BaseCommand):
             marker = "created" if created else "exists"
             self.stdout.write(f"  {product.name} ({marker})", ending="")
 
-            if not skip_images and not product.images.exists():
-                img_seed = p.get("img_seed", slug)
-                self.stdout.write(" - downloading image...", ending="")
-                data = _download_image(img_seed)
-                if data:
-                    filename = f"{slug}.jpg"
-                    img_obj = ProductImage(product=product, is_primary=True, alt_text=product.name)
-                    img_obj.image.save(filename, ContentFile(data), save=True)
-                    self.stdout.write(" OK", ending="")
-                else:
-                    self.stdout.write(" (image download failed, skipped)", ending="")
+            if not skip_images:
+                # Check if the image FILE actually exists on disk.
+                # On ephemeral filesystems (Render free tier) the DB record survives a
+                # redeploy but the file is gone → we must re-download it.
+                primary = product.images.filter(is_primary=True).first()
+                file_on_disk = (
+                    primary is not None
+                    and bool(primary.image)
+                    and primary.image.storage.exists(primary.image.name)
+                )
+                if not file_on_disk:
+                    if primary:
+                        primary.delete()   # remove stale DB record
+                    img_seed = p.get("img_seed", slug)
+                    self.stdout.write(" - downloading image...", ending="")
+                    data = _download_image(img_seed)
+                    if data:
+                        filename = f"{slug}.jpg"
+                        img_obj = ProductImage(product=product, is_primary=True, alt_text=product.name)
+                        img_obj.image.save(filename, ContentFile(data), save=True)
+                        self.stdout.write(" OK", ending="")
+                    else:
+                        self.stdout.write(" (image download failed, skipped)", ending="")
             self.stdout.write("")
 
         self.stdout.write("Seeding banners...")
