@@ -361,7 +361,6 @@ function CheckoutInner() {
                 {[
                   { value: 'mock', label: 'Mock Payment', desc: 'Instant test payment (demo)', icon: <FlaskIcon size={20} /> },
                   { value: 'card', label: 'Credit / Debit Card', desc: 'Visa, Mastercard, Amex', icon: <CreditCardIcon size={20} /> },
-                  { value: 'paypal', label: 'PayPal', desc: 'Fast & secure checkout', icon: <PayPalIcon size={20} /> },
                 ].map((opt) => (
                   <label
                     key={opt.value}
@@ -404,24 +403,7 @@ function CheckoutInner() {
                 </>
               )}
 
-              {/* PayPal Buttons */}
-              {form.payment_method === 'paypal' && (
-                <div className={styles.paypalWrapper}>
-                  {PAYPAL_CLIENT_ID ? (
-                    <PayPalButtons
-                      style={{ layout: 'vertical', shape: 'rect', label: 'pay', height: 44 }}
-                      createOrder={paypalCreateOrder}
-                      onApprove={paypalOnApprove}
-                      onError={paypalOnError}
-                      disabled={submitting}
-                    />
-                  ) : (
-                    <p className={styles.paymentUnavailable}>
-                      PayPal is not configured. Add <code>NEXT_PUBLIC_PAYPAL_CLIENT_ID</code> to your <code>.env.local</code>.
-                    </p>
-                  )}
-                </div>
-              )}
+              {/* PayPal hidden — not active in this demo */}
             </div>
           </div>
 
