@@ -70,9 +70,21 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+# Try every variable name Railway may use for the PostgreSQL URL.
+_DB_URL = (
+    os.environ.get('DATABASE_URL') or
+    os.environ.get('DATABASE_PRIVATE_URL') or
+    os.environ.get('DATABASE_PUBLIC_URL') or
+    'sqlite:///db.sqlite3'
+)
+
+# Log which DB backend is active so it is visible in Railway deploy logs.
+import sys
+print(f"[settings] DATABASE backend: {_DB_URL.split('://')[0]}", file=sys.stderr, flush=True)
+
 DATABASES = {
     'default': dj_database_url.config(
-        default='sqlite:///db.sqlite3',
+        default=_DB_URL,
         conn_max_age=600,
     )
 }
