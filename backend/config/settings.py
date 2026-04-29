@@ -11,12 +11,15 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 
-# On Railway, RAILWAY_PUBLIC_DOMAIN is injected automatically (e.g. luxe--commerce.up.railway.app).
-# Add it to ALLOWED_HOSTS and CSRF_TRUSTED_ORIGINS so the admin and API work without
-# manually setting extra env vars.
+# Railway: RAILWAY_PUBLIC_DOMAIN is injected automatically.
 _RAILWAY_DOMAIN = os.environ.get('RAILWAY_PUBLIC_DOMAIN', '')
 if _RAILWAY_DOMAIN and _RAILWAY_DOMAIN not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(_RAILWAY_DOMAIN)
+
+# Render: RENDER_EXTERNAL_HOSTNAME is injected automatically (e.g. luxe-backend-e8os.onrender.com).
+_RENDER_DOMAIN = os.environ.get('RENDER_EXTERNAL_HOSTNAME', '')
+if _RENDER_DOMAIN and _RENDER_DOMAIN not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(_RENDER_DOMAIN)
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -154,14 +157,21 @@ CSRF_TRUSTED_ORIGINS = config(
     default='http://localhost:3000'
 ).split(',')
 
-# Auto-add the Railway public URL so the admin panel and API work out of the box.
+# Auto-add Railway public URL.
 if _RAILWAY_DOMAIN:
     _railway_origin = f'https://{_RAILWAY_DOMAIN}'
     if _railway_origin not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(_railway_origin)
-    # Also allow the Railway URL as a CORS origin (for same-domain admin / API calls).
     if _railway_origin not in CORS_ALLOWED_ORIGINS:
         CORS_ALLOWED_ORIGINS.append(_railway_origin)
+
+# Auto-add Render public URL.
+if _RENDER_DOMAIN:
+    _render_origin = f'https://{_RENDER_DOMAIN}'
+    if _render_origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(_render_origin)
+    if _render_origin not in CORS_ALLOWED_ORIGINS:
+        CORS_ALLOWED_ORIGINS.append(_render_origin)
 
 # ── Payment Gateways ─────────────────────────────
 STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY', default='')
