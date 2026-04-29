@@ -27,6 +27,15 @@ const nextConfig = {
         hostname: '*.onrender.com',
         pathname: '/media/**',
       },
+      // Picsum Photos CDN (product images served from here)
+      {
+        protocol: 'https',
+        hostname: 'picsum.photos',
+      },
+      {
+        protocol: 'https',
+        hostname: 'fastly.picsum.photos',
+      },
     ],
   },
 };

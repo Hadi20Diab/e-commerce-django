@@ -21,13 +21,16 @@ class ProductImageSerializer(serializers.ModelSerializer):
         fields = ('id', 'image', 'alt_text', 'is_primary')
 
     def get_image(self, obj):
-        # Prefer a locally stored file; fall back to external_url (e.g. picsum).
+        # Prefer external_url (CDN, always available) over a local file.
+        # Fall back to local file only if no external_url is set.
+        if obj.external_url:
+            return obj.external_url
         if obj.image:
             request = self.context.get('request')
             if request:
                 return request.build_absolute_uri(obj.image.url)
             return obj.image.url
-        return obj.external_url or None
+        return None
 
 
 class ProductListSerializer(serializers.ModelSerializer):

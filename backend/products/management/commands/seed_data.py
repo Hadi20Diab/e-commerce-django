@@ -198,9 +198,10 @@ class Command(BaseCommand):
             marker = "created" if created else "exists"
             self.stdout.write(f"  {product.name} ({marker})")
 
-            # Ensure a primary image record with an external_url exists.
-            # Images are served directly from picsum.photos — no file download needed,
-            # so this is completely immune to ephemeral filesystems.
+            # Ensure a primary image record with the correct external_url.
+            # Images come from picsum.photos — no local files, immune to ephemeral FS.
+            # We also migrate OLD records that still have the `image` file field set
+            # (from before this change) by clearing it and setting external_url.
             primary = product.images.filter(is_primary=True).first()
             img_seed = p.get("img_seed", slug)
             url = _picsum_url(img_seed)
@@ -211,10 +212,17 @@ class Command(BaseCommand):
                     alt_text=product.name,
                     is_primary=True,
                 )
-            elif primary.external_url != url and not primary.image:
-                # Update stale URL or fix a record that has neither file nor URL
-                primary.external_url = url
-                primary.save(update_fields=["external_url"])
+            else:
+                # Always overwrite: clear stale file reference, ensure correct URL.
+                update_fields = []
+                if primary.external_url != url:
+                    primary.external_url = url
+                    update_fields.append("external_url")
+                if primary.image:  # clear old local-file path (file no longer exists)
+                    primary.image = None
+                    update_fields.append("image")
+                if update_fields:
+                    primary.save(update_fields=update_fields)
 
         self.stdout.write("Seeding banners...")
         for b in BANNERS:
