@@ -14,10 +14,10 @@ export default function Footer() {
           </Link>
           <p>Premium products, curated for those who demand the finest. Experience shopping redefined.</p>
           <div className={styles.social}>
-            <span className={styles.socialLink} title="Twitter"><TwitterXIcon size={16} /></span>
-            <span className={styles.socialLink} title="Instagram"><InstagramIcon size={16} /></span>
-            <span className={styles.socialLink} title="Facebook"><FacebookIcon size={16} /></span>
-            <span className={styles.socialLink} title="Pinterest"><PinterestIcon size={16} /></span>
+            <Link href="https://x.com" target="_blank" rel="noopener noreferrer" className={styles.socialLink} title="Twitter"><TwitterXIcon size={16} /></Link>
+            <Link href="https://instagram.com" target="_blank" rel="noopener noreferrer" className={styles.socialLink} title="Instagram"><InstagramIcon size={16} /></Link>
+            <Link href="https://facebook.com" target="_blank" rel="noopener noreferrer" className={styles.socialLink} title="Facebook"><FacebookIcon size={16} /></Link>
+            <Link href="https://pinterest.com" target="_blank" rel="noopener noreferrer" className={styles.socialLink} title="Pinterest"><PinterestIcon size={16} /></Link>
           </div>
         </div>
 
