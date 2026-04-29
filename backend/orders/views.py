@@ -570,7 +570,7 @@ class StripeWebhookView(APIView):
 
             elif event_type == 'payment_intent.amount_capturable_updated':
                 # PaymentIntent awaiting manual capture — log only
-                pi_id = data_obj.get('id', '')
+                pi_id = data_obj['id'] if 'id' in data_obj else ''
                 logger.info('Stripe: amount_capturable_updated for %s', pi_id)
 
             elif event_type == 'charge.refunded':
@@ -592,7 +592,7 @@ class StripeWebhookView(APIView):
     # ── Event handlers ────────────────────────────────────────────────────────
 
     def _handle_pi_succeeded(self, pi):
-        pi_id = pi.get('id', '')
+        pi_id = pi['id'] if 'id' in pi else ''
         order = Order.objects.filter(stripe_payment_intent_id=pi_id).first()
         if not order:
             logger.info('Stripe webhook: no order found for PI %s (may be handled by checkout flow)', pi_id)
@@ -606,7 +606,7 @@ class StripeWebhookView(APIView):
         logger.info('Stripe webhook: order %s marked paid (PI %s)', order.id, pi_id)
 
     def _handle_pi_failed(self, pi):
-        pi_id = pi.get('id', '')
+        pi_id = pi['id'] if 'id' in pi else ''
         order = Order.objects.filter(stripe_payment_intent_id=pi_id, is_paid=False).first()
         if not order:
             return
@@ -615,7 +615,7 @@ class StripeWebhookView(APIView):
         logger.info('Stripe webhook: order %s cancelled — payment failed (PI %s)', order.id, pi_id)
 
     def _handle_pi_canceled(self, pi):
-        pi_id = pi.get('id', '')
+        pi_id = pi['id'] if 'id' in pi else ''
         order = Order.objects.filter(stripe_payment_intent_id=pi_id, is_paid=False).first()
         if not order:
             return
@@ -624,7 +624,7 @@ class StripeWebhookView(APIView):
         logger.info('Stripe webhook: order %s cancelled (PI %s)', order.id, pi_id)
 
     def _handle_charge_refunded(self, charge):
-        pi_id = charge.get('payment_intent', '')
+        pi_id = charge['payment_intent'] if 'payment_intent' in charge else ''
         if not pi_id:
             return
         order = Order.objects.filter(stripe_payment_intent_id=pi_id).first()
@@ -635,11 +635,11 @@ class StripeWebhookView(APIView):
         logger.info('Stripe webhook: order %s marked cancelled — charge refunded (PI %s)', order.id, pi_id)
 
     def _handle_dispute(self, event_type, dispute):
-        charge_id = dispute.get('charge', '')
+        charge_id = dispute['charge'] if 'charge' in dispute else ''
         logger.warning('Stripe webhook: dispute %s on charge %s', event_type, charge_id)
 
     def _handle_checkout_completed(self, session):
-        pi_id = session.get('payment_intent', '')
+        pi_id = session['payment_intent'] if 'payment_intent' in session else ''
         if not pi_id:
             return
         order = Order.objects.filter(stripe_payment_intent_id=pi_id).first()

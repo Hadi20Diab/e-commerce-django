@@ -67,6 +67,10 @@ DATABASES = {
     )
 }
 
+# Give SQLite up to 20 s to acquire a write lock instead of failing immediately.
+if DATABASES['default'].get('ENGINE', '').endswith('sqlite3'):
+    DATABASES['default'].setdefault('OPTIONS', {})['timeout'] = 20
+
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
