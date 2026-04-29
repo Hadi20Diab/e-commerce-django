@@ -370,6 +370,5 @@
 }
 
 @media (max-width: 480px) {
-  .logoText { display: none; }
   .inner { gap: var(--space-md); }
 }

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { TwitterXIcon, InstagramIcon, FacebookIcon, PinterestIcon } from '../icons';
 import styles from './Footer.module.css';
 
@@ -9,8 +10,7 @@ export default function Footer() {
         {/* Brand */}
         <div className={styles.brand}>
           <Link href="/" className={styles.logo}>
-            <span className={styles.logoIcon}>L</span>
-            <span className={styles.logoText}>LUXE</span>
+            <Image src="/Luxe_logo.png" alt="LUXE" height={40} width={120} style={{ objectFit: 'contain' }} />
           </Link>
           <p>Premium products, curated for those who demand the finest. Experience shopping redefined.</p>
           <div className={styles.social}>
@@ -47,6 +47,7 @@ export default function Footer() {
         <div className={styles.col}>
           <h4>Support</h4>
           <ul>
+            <li><Link href="/about">About Us</Link></li>
             <li><Link href="/contact">Contact Us</Link></li>
             <li><Link href="/faq">FAQ</Link></li>
             <li><Link href="/shipping-policy">Shipping Policy</Link></li>

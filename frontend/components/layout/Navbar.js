@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
@@ -13,6 +14,7 @@ import styles from './Navbar.module.css';
 const NAV_LINKS = [
   { href: '/', label: 'Home' },
   { href: '/products', label: 'Products' },
+  { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },
 ];
 
@@ -62,8 +64,7 @@ export default function Navbar() {
         <div className={styles.inner}>
           {/* Logo */}
           <Link href="/" className={styles.logo}>
-            <span className={styles.logoIcon}>L</span>
-            <span className={styles.logoText}>LUXE</span>
+            <Image src="/Luxe_logo.png" alt="LUXE" height={38} width={114} style={{ objectFit: 'contain' }} priority />
           </Link>
 
           {/* Desktop Nav Links */}
