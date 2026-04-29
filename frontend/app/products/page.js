@@ -1,12 +1,12 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { productsApi } from '../../lib/api';
 import ProductCard from '../../components/product/ProductCard';
 import styles from './products.module.css';
 
-export default function ProductsPage() {
+function ProductsInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -261,5 +261,13 @@ export default function ProductsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: '80px 24px', textAlign: 'center', color: 'var(--text-muted)' }}>Loading products…</div>}>
+      <ProductsInner />
+    </Suspense>
   );
 }
