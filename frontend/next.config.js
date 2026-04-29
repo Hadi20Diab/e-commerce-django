@@ -21,6 +21,12 @@ const nextConfig = {
         hostname: 'railway.app',
         pathname: '/media/**',
       },
+      // Render production backend
+      {
+        protocol: 'https',
+        hostname: '*.onrender.com',
+        pathname: '/media/**',
+      },
     ],
   },
 };

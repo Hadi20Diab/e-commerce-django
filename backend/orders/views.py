@@ -16,8 +16,8 @@ logger = logging.getLogger(__name__)
 
 # ── Order confirmation email ───────────────────────────────────────────────────
 
-def _send_order_confirmation(order):
-    """Send a confirmation email to the buyer after a successful payment."""
+def _send_order_confirmation_task(order):
+    """Internal: actually send the email. Runs in a background thread."""
     if not order.user or not order.user.email:
         return
     from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@luxe.com')
@@ -104,6 +104,13 @@ def _send_order_confirmation(order):
         msg.send(fail_silently=True)
     except Exception:
         logger.exception('Failed to send order confirmation email for order %s', order.id)
+
+
+def _send_order_confirmation(order):
+    """Send order confirmation email in a background thread so it never blocks the HTTP response."""
+    import threading
+    t = threading.Thread(target=_send_order_confirmation_task, args=(order,), daemon=True)
+    t.start()
 
 
 try:
