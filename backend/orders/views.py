@@ -6,10 +6,11 @@ from django.conf import settings
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from django.core.mail import EmailMultiAlternatives
 from decimal import Decimal
 import requests as http_requests
 import logging
+
+from mailer import send_email
 
 logger = logging.getLogger(__name__)
 
@@ -17,10 +18,10 @@ logger = logging.getLogger(__name__)
 # ── Order confirmation email ───────────────────────────────────────────────────
 
 def _send_order_confirmation_task(order):
-    """Internal: actually send the email. Runs in a background thread."""
+    """Internal: build and send the order confirmation. Runs in a background thread."""
     if not order.user or not order.user.email:
         return
-    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@luxe.com')
+
     recipient = order.user.email
     subject = f"Order Confirmed — #{order.id} | Luxe Store"
 
@@ -99,9 +100,12 @@ def _send_order_confirmation_task(order):
 </body></html>"""
 
     try:
-        msg = EmailMultiAlternatives(subject, text_body, from_email, [recipient])
-        msg.attach_alternative(html_body, 'text/html')
-        msg.send(fail_silently=True)
+        send_email(
+            to=recipient,
+            subject=subject,
+            html=html_body,
+            text=text_body,
+        )
     except Exception:
         logger.exception('Failed to send order confirmation email for order %s', order.id)
 

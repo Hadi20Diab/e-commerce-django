@@ -182,13 +182,16 @@ PAYPAL_SECRET = config('PAYPAL_SECRET', default='')
 PAYPAL_MODE = config('PAYPAL_MODE', default='sandbox')  # 'sandbox' or 'live'
 
 # ── Email ────────────────────────────────────────
+# Render free tier blocks all outbound SMTP (ports 25, 465, 587).
+# We use Resend HTTP API instead (HTTPS port 443, always open).
+# Sign up free at https://resend.com → get API key → add to Render env vars.
+RESEND_API_KEY = config('RESEND_API_KEY', default='')
+# RESEND_FROM_EMAIL: sender shown to recipients.
+# Without domain verification use 'Luxe Store <onboarding@resend.dev>'
+# After verifying your domain set e.g. 'Luxe Store <noreply@yourdomain.com>'
+RESEND_FROM_EMAIL = config('RESEND_FROM_EMAIL', default='Luxe Store <onboarding@resend.dev>')
+# Keep these for local dev (console backend prints to terminal)
 EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
-EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
-EMAIL_PORT = 465          # SMTPS/SSL — port 587 (STARTTLS) is blocked on Render free tier
-EMAIL_USE_SSL = True      # SSL wraps the whole connection (required for port 465)
-EMAIL_USE_TLS = False     # mutually exclusive with SSL — must be False
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@luxe.com')
-EMAIL_TIMEOUT = 10        # prevent SMTP from blocking gunicorn workers
 
