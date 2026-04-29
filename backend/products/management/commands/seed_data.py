@@ -257,3 +257,38 @@ class Command(BaseCommand):
             f"{len(PRODUCTS)} products, {len(BANNERS)} banners, "
             f"{len(COUPONS)} coupons."
         ))
+
+        # ── Demo users ────────────────────────────────────────────────────────
+        self.stdout.write("Seeding demo users...")
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+
+        # Superuser / admin
+        if not User.objects.filter(email='admin@luxe.com').exists():
+            User.objects.create_superuser(
+                email='admin@luxe.com',
+                password='Admin@1234',
+                first_name='Admin',
+                last_name='LUXE',
+            )
+            self.stdout.write("  admin@luxe.com (created)")
+        else:
+            self.stdout.write("  admin@luxe.com (exists)")
+
+        # Demo shopper
+        if not User.objects.filter(email='demo@luxe.com').exists():
+            User.objects.create_user(
+                email='demo@luxe.com',
+                password='Demo@1234',
+                first_name='Demo',
+                last_name='User',
+            )
+            self.stdout.write("  demo@luxe.com (created)")
+        else:
+            self.stdout.write("  demo@luxe.com (exists)")
+
+        self.stdout.write(self.style.SUCCESS(
+            "\nDemo credentials:\n"
+            "  Admin  → admin@luxe.com / Admin@1234\n"
+            "  Tester → demo@luxe.com  / Demo@1234"
+        ))
