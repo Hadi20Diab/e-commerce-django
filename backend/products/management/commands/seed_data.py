@@ -199,6 +199,8 @@ class Command(BaseCommand):
             self.stdout.write(f"  {cat.name} ({marker})")
 
         self.stdout.write("Seeding products...")
+        # Pass 1: create/update DB records; collect products whose image file is missing.
+        needs_image = []   # list of (product_obj, img_seed, slug)
         for p in PRODUCTS:
             slug = slugify(p["name"])
             defaults = {
@@ -212,12 +214,12 @@ class Command(BaseCommand):
             }
             product, created = Product.objects.get_or_create(slug=slug, defaults=defaults)
             marker = "created" if created else "exists"
-            self.stdout.write(f"  {product.name} ({marker})", ending="")
+            self.stdout.write(f"  {product.name} ({marker})")
 
             if not skip_images:
-                # Check if the image FILE actually exists on disk.
-                # On ephemeral filesystems (Render free tier) the DB record survives a
-                # redeploy but the file is gone → we must re-download it.
+                # Check the FILE exists on disk, not just the DB record.
+                # Render's ephemeral filesystem loses files on every redeploy/restart,
+                # but PostgreSQL records persist → we must detect and re-download.
                 primary = product.images.filter(is_primary=True).first()
                 file_on_disk = (
                     primary is not None
@@ -227,17 +229,31 @@ class Command(BaseCommand):
                 if not file_on_disk:
                     if primary:
                         primary.delete()   # remove stale DB record
-                    img_seed = p.get("img_seed", slug)
-                    self.stdout.write(" - downloading image...", ending="")
-                    data = _download_image(img_seed)
+                    needs_image.append((product, p.get("img_seed", slug), slug))
+
+        # Pass 2: download all missing images in parallel (saves ~60 s vs sequential).
+        if needs_image:
+            from concurrent.futures import ThreadPoolExecutor, as_completed
+            self.stdout.write(
+                f"Downloading {len(needs_image)} product image(s) in parallel..."
+            )
+
+            def _fetch(item):
+                prod, seed, s = item
+                return prod, s, _download_image(seed)
+
+            with ThreadPoolExecutor(max_workers=10) as executor:
+                futures = {executor.submit(_fetch, item): item for item in needs_image}
+                for future in as_completed(futures):
+                    prod, s, data = future.result()
                     if data:
-                        filename = f"{slug}.jpg"
-                        img_obj = ProductImage(product=product, is_primary=True, alt_text=product.name)
-                        img_obj.image.save(filename, ContentFile(data), save=True)
-                        self.stdout.write(" OK", ending="")
+                        img_obj = ProductImage(
+                            product=prod, is_primary=True, alt_text=prod.name
+                        )
+                        img_obj.image.save(f"{s}.jpg", ContentFile(data), save=True)
+                        self.stdout.write(f"  {prod.name} - image OK")
                     else:
-                        self.stdout.write(" (image download failed, skipped)", ending="")
-            self.stdout.write("")
+                        self.stdout.write(f"  {prod.name} - image download failed (skipped)")
 
         self.stdout.write("Seeding banners...")
         for b in BANNERS:
