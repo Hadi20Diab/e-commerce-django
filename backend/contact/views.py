@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from django.conf import settings
 from django.core.mail import send_mail, EmailMultiAlternatives
 import logging
+import threading
 
 from .serializers import ContactMessageSerializer
 
@@ -12,12 +13,17 @@ logger = logging.getLogger(__name__)
 def _send_contact_emails(name, email, subject, message):
     """
     Sends two emails after a contact form submission:
-      1. Notification to the site admin (EMAIL_HOST_USER or DEFAULT_FROM_EMAIL).
-      2. Confirmation reply to the visitor.
-    Both silently skip if EMAIL_HOST_USER is not configured (console backend).
+      1. Notification to the site admin.
+      2. Auto-reply confirmation to the visitor.
+    Runs in a background thread so it never blocks the HTTP response.
+    fail_silently=False so SMTP errors are caught and logged by the except block.
     """
     admin_email = getattr(settings, 'EMAIL_HOST_USER', '') or getattr(settings, 'DEFAULT_FROM_EMAIL', '')
     from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@luxe.com')
+
+    if not admin_email:
+        logger.warning('contact: EMAIL_HOST_USER/DEFAULT_FROM_EMAIL not configured — skipping email send')
+        return
 
     # 1 ── Notify admin
     try:
@@ -33,10 +39,11 @@ def _send_contact_emails(name, email, subject, message):
             message=admin_body,
             from_email=from_email,
             recipient_list=[admin_email],
-            fail_silently=True,
+            fail_silently=False,
         )
+        logger.info('contact: admin notification sent to %s', admin_email)
     except Exception:
-        logger.exception('Failed to send contact notification email to admin')
+        logger.exception('contact: failed to send notification email to admin')
 
     # 2 ── Auto-reply to visitor
     try:
@@ -59,9 +66,10 @@ def _send_contact_emails(name, email, subject, message):
 </body></html>"""
         msg = EmailMultiAlternatives(reply_subject, reply_text, from_email, [email])
         msg.attach_alternative(reply_html, 'text/html')
-        msg.send(fail_silently=True)
+        msg.send(fail_silently=False)
+        logger.info('contact: auto-reply sent to %s', email)
     except Exception:
-        logger.exception('Failed to send contact auto-reply email to %s', email)
+        logger.exception('contact: failed to send auto-reply to %s', email)
 
 
 class ContactView(generics.CreateAPIView):
@@ -73,14 +81,16 @@ class ContactView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         instance = serializer.save()
 
-        _send_contact_emails(
-            name=instance.name,
-            email=instance.email,
-            subject=instance.subject,
-            message=instance.message,
+        # Send in background thread — never blocks the HTTP response
+        t = threading.Thread(
+            target=_send_contact_emails,
+            args=(instance.name, instance.email, instance.subject, instance.message),
+            daemon=True,
         )
+        t.start()
 
         return Response(
             {'detail': 'Your message has been received. We will get back to you soon.'},
             status=status.HTTP_201_CREATED
         )
+
