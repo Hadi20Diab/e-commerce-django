@@ -2,17 +2,13 @@
 Management command to seed the database with sample products, categories, and banners.
 
 Usage:
-  python manage.py seed_data              # seed everything + download images
-  python manage.py seed_data --no-images  # skip image downloads (faster, offline)
-  python manage.py seed_data --clear      # wipe existing data first, then seed
+  python manage.py seed_data        # seed everything (images served from picsum.photos)
+  python manage.py seed_data --clear  # wipe existing data first, then seed
 """
 from django.core.management.base import BaseCommand
 from django.utils.text import slugify
-from django.core.files.base import ContentFile
 from products.models import Category, Product, ProductImage, Banner
 from decimal import Decimal
-import urllib.request
-import urllib.error
 
 
 # ── Categories ────────────────────────────────────────────────────────────────
@@ -151,15 +147,9 @@ COUPONS = [
 ]
 
 
-def _download_image(seed, width=800, height=600):
-    """Download a Picsum photo by keyword seed and return raw bytes, or None on failure."""
-    url = f"https://picsum.photos/seed/{seed}/{width}/{height}"
-    try:
-        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-        with urllib.request.urlopen(req, timeout=20) as resp:
-            return resp.read()
-    except (urllib.error.URLError, Exception):
-        return None
+def _picsum_url(seed, width=800, height=600):
+    """Return a deterministic picsum.photos URL for the given seed word."""
+    return f"https://picsum.photos/seed/{seed}/{width}/{height}"
 
 
 class Command(BaseCommand):
@@ -167,18 +157,12 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "--no-images",
-            action="store_true",
-            help="Skip downloading product images (faster, for offline use)",
-        )
-        parser.add_argument(
             "--clear",
             action="store_true",
             help="Delete all existing products, categories, and banners before seeding",
         )
 
     def handle(self, *args, **options):
-        skip_images = options["no_images"]
 
         if options["clear"]:
             self.stdout.write(self.style.WARNING("Clearing existing data..."))
@@ -199,8 +183,6 @@ class Command(BaseCommand):
             self.stdout.write(f"  {cat.name} ({marker})")
 
         self.stdout.write("Seeding products...")
-        # Pass 1: create/update DB records; collect products whose image file is missing.
-        needs_image = []   # list of (product_obj, img_seed, slug)
         for p in PRODUCTS:
             slug = slugify(p["name"])
             defaults = {
@@ -216,44 +198,23 @@ class Command(BaseCommand):
             marker = "created" if created else "exists"
             self.stdout.write(f"  {product.name} ({marker})")
 
-            if not skip_images:
-                # Check the FILE exists on disk, not just the DB record.
-                # Render's ephemeral filesystem loses files on every redeploy/restart,
-                # but PostgreSQL records persist → we must detect and re-download.
-                primary = product.images.filter(is_primary=True).first()
-                file_on_disk = (
-                    primary is not None
-                    and bool(primary.image)
-                    and primary.image.storage.exists(primary.image.name)
+            # Ensure a primary image record with an external_url exists.
+            # Images are served directly from picsum.photos — no file download needed,
+            # so this is completely immune to ephemeral filesystems.
+            primary = product.images.filter(is_primary=True).first()
+            img_seed = p.get("img_seed", slug)
+            url = _picsum_url(img_seed)
+            if primary is None:
+                ProductImage.objects.create(
+                    product=product,
+                    external_url=url,
+                    alt_text=product.name,
+                    is_primary=True,
                 )
-                if not file_on_disk:
-                    if primary:
-                        primary.delete()   # remove stale DB record
-                    needs_image.append((product, p.get("img_seed", slug), slug))
-
-        # Pass 2: download all missing images in parallel (saves ~60 s vs sequential).
-        if needs_image:
-            from concurrent.futures import ThreadPoolExecutor, as_completed
-            self.stdout.write(
-                f"Downloading {len(needs_image)} product image(s) in parallel..."
-            )
-
-            def _fetch(item):
-                prod, seed, s = item
-                return prod, s, _download_image(seed)
-
-            with ThreadPoolExecutor(max_workers=10) as executor:
-                futures = {executor.submit(_fetch, item): item for item in needs_image}
-                for future in as_completed(futures):
-                    prod, s, data = future.result()
-                    if data:
-                        img_obj = ProductImage(
-                            product=prod, is_primary=True, alt_text=prod.name
-                        )
-                        img_obj.image.save(f"{s}.jpg", ContentFile(data), save=True)
-                        self.stdout.write(f"  {prod.name} - image OK")
-                    else:
-                        self.stdout.write(f"  {prod.name} - image download failed (skipped)")
+            elif primary.external_url != url and not primary.image:
+                # Update stale URL or fix a record that has neither file nor URL
+                primary.external_url = url
+                primary.save(update_fields=["external_url"])
 
         self.stdout.write("Seeding banners...")
         for b in BANNERS:

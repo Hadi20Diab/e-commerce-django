@@ -14,9 +14,20 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
     class Meta:
         model = ProductImage
         fields = ('id', 'image', 'alt_text', 'is_primary')
+
+    def get_image(self, obj):
+        # Prefer a locally stored file; fall back to external_url (e.g. picsum).
+        if obj.image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return obj.external_url or None
 
 
 class ProductListSerializer(serializers.ModelSerializer):
