@@ -11,8 +11,7 @@ services:
     runtime: python
     rootDir: backend
     buildCommand: pip install -r requirements.txt && python manage.py migrate --noinput && python manage.py collectstatic --noinput && (python manage.py seed_data || true)
-    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
-    healthCheckPath: /health/
+    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --preload --timeout 120
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
