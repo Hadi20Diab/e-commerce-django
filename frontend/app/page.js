@@ -682,7 +682,7 @@ function GuestHome({ categories, loadingCats, featured, loadingFeatured }) {
                 <div className={styles.floatCardHeader}>
 
 
-                  <div className={styles.floatCardIcon}>ðŸ”¥</div>
+                  <div className={styles.floatCardIcon}>🔥</div>
 
 
                   <div>
@@ -784,7 +784,7 @@ function GuestHome({ categories, loadingCats, featured, loadingFeatured }) {
             { icon: '↩', title: 'Easy Returns', desc: '30-day hassle-free returns' },
 
 
-            { icon: 'ðŸ’¬', title: '24/7 Support', desc: 'Always here to help' },
+            { icon: '💬', title: '24/7 Support', desc: 'Always here to help' },
 
 
           ].map((f) => (

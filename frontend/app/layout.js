@@ -10,6 +10,11 @@ export const metadata = {
   title: { default: 'LUXE Store', template: '%s | LUXE Store' },
   description: 'Premium e-commerce experience — discover curated products with style.',
   keywords: ['ecommerce', 'luxury', 'shopping', 'online store'],
+  icons: {
+    icon: '/Luxe_logo-withoutText.png',
+    shortcut: '/Luxe_logo-withoutText.png',
+    apple: '/Luxe_logo-withoutText.png',
+  },
 };
 
 export default function RootLayout({ children }) {
