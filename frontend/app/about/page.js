@@ -126,8 +126,8 @@ export default function AboutPage() {
                     <h2 className={styles.sectionTitle}>Under the Hood</h2>
                     <div className={styles.techGrid}>
                         {[
-                            { name: 'Next.js', role: 'Frontend — App Router, SSR, CSS Modules' },
-                            { name: 'Django', role: 'Backend — REST API, JWT auth, DRF' },
+                            { name: 'Next.js 14', role: 'Frontend — App Router, SSR, CSS Modules' },
+                            { name: 'Django 5', role: 'Backend — REST API, JWT auth, DRF' },
                             { name: 'Stripe', role: 'Payment processing — cards & webhooks' },
                             { name: 'PostgreSQL', role: 'Production database' },
                             { name: 'Vercel', role: 'Frontend hosting & edge delivery' },
