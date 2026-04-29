@@ -5,6 +5,7 @@ import { ToastProvider } from '../context/ToastContext';
 import { WishlistProvider } from '../context/WishlistContext';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
+import WakeUpBanner from '../components/layout/WakeUpBanner';
 
 export const metadata = {
   title: { default: 'LUXE Store', template: '%s | LUXE Store' },
@@ -33,6 +34,7 @@ export default function RootLayout({ children }) {
           <CartProvider>
             <WishlistProvider>
               <ToastProvider>
+                <WakeUpBanner />
                 <Navbar />
                 <main className="pageWrapper">
                   {children}
