@@ -184,13 +184,11 @@ PAYPAL_MODE = config('PAYPAL_MODE', default='sandbox')  # 'sandbox' or 'live'
 # ── Email ────────────────────────────────────────
 EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
 EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
-# Port 465 (SMTPS/SSL) — Render free tier blocks 587 (STARTTLS) but allows 465
-EMAIL_PORT = config('EMAIL_PORT', default=465, cast=int)
-EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=False, cast=bool)
-EMAIL_USE_SSL = config('EMAIL_USE_SSL', default=True, cast=bool)
+EMAIL_PORT = 465          # SMTPS/SSL — port 587 (STARTTLS) is blocked on Render free tier
+EMAIL_USE_SSL = True      # SSL wraps the whole connection (required for port 465)
+EMAIL_USE_TLS = False     # mutually exclusive with SSL — must be False
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@luxe.com')
-# Prevent SMTP connection from hanging and killing gunicorn workers
-EMAIL_TIMEOUT = 10
+EMAIL_TIMEOUT = 10        # prevent SMTP from blocking gunicorn workers
 
