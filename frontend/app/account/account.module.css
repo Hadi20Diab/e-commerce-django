@@ -319,6 +319,19 @@
   margin-top: var(--space-md);
 }
 
+.editBtn {
+  background: none;
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.editBtn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-glow); }
+
 .deleteBtn {
   background: none;
   border: 1px solid rgba(255, 23, 68, 0.3);
