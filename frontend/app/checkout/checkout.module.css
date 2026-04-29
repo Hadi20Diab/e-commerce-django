@@ -342,3 +342,42 @@
   border-radius: 3px;
   font-size: 0.8rem;
 }
+
+/* Test card hint */
+.testCardHint {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  margin-top: var(--space-lg);
+  background: rgba(99, 102, 241, 0.07);
+  border: 1px dashed rgba(99, 102, 241, 0.35);
+  border-radius: var(--radius-md);
+  flex-wrap: wrap;
+}
+
+.testCardLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #818cf8;
+  background: rgba(99, 102, 241, 0.15);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.testCardNumber {
+  font-family: monospace;
+  font-size: 0.92rem;
+  color: var(--text-primary);
+  letter-spacing: 0.05em;
+  background: rgba(255,255,255,0.05);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.testCardMeta {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}

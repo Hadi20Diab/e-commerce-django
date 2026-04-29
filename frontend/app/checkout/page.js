@@ -1,5 +1,5 @@
 'use client';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { loadStripe } from '@stripe/stripe-js';
@@ -8,7 +8,7 @@ import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import { useToast } from '../../context/ToastContext';
-import { ordersApi } from '../../lib/api';
+import { ordersApi, authApi } from '../../lib/api';
 import { formatPrice, extractErrors } from '../../lib/utils';
 import {
   MapPinIcon, CreditCardIcon, FlaskIcon, PayPalIcon,
@@ -70,6 +70,28 @@ function CheckoutInner() {
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
+
+  // Pre-fill shipping from saved default address
+  useEffect(() => {
+    if (!user) return;
+    authApi.getAddresses()
+      .then((res) => {
+        const list = res.data.results ?? res.data;
+        const addr = list.find((a) => a.is_default) ?? list[0];
+        if (addr) {
+          setForm((f) => ({
+            ...f,
+            shipping_full_name: addr.full_name || '',
+            shipping_street: addr.street_address || '',
+            shipping_city: addr.city || '',
+            shipping_state: addr.state || '',
+            shipping_postal_code: addr.postal_code || '',
+            shipping_country: addr.country || '',
+          }));
+        }
+      })
+      .catch(() => {});
+  }, [user]);
 
   // Coupon state
   const [couponInput, setCouponInput] = useState('');
@@ -364,15 +386,22 @@ function CheckoutInner() {
 
               {/* Stripe CardElement */}
               {form.payment_method === 'card' && (
-                <div className={styles.cardElementWrapper}>
-                  {stripePromise ? (
-                    <CardElement options={CARD_ELEMENT_OPTIONS} />
-                  ) : (
-                    <p className={styles.paymentUnavailable}>
-                      Card payments are not configured. Add <code>NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code> to your <code>.env.local</code>.
-                    </p>
-                  )}
-                </div>
+                <>
+                  <div className={styles.testCardHint}>
+                    <span className={styles.testCardLabel}>Test card</span>
+                    <code className={styles.testCardNumber}>4242 4242 4242 4242</code>
+                    <span className={styles.testCardMeta}>· Any future date · Any CVC</span>
+                  </div>
+                  <div className={styles.cardElementWrapper}>
+                    {stripePromise ? (
+                      <CardElement options={CARD_ELEMENT_OPTIONS} />
+                    ) : (
+                      <p className={styles.paymentUnavailable}>
+                        Card payments are not configured. Add <code>NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code> to your <code>.env.local</code>.
+                      </p>
+                    )}
+                  </div>
+                </>
               )}
 
               {/* PayPal Buttons */}
