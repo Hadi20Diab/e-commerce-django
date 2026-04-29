@@ -1,19 +1,20 @@
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from django.conf import settings
+from django.core.mail import EmailMultiAlternatives
 import logging
 import threading
 
 from .serializers import ContactMessageSerializer
-from mailer import send_email
 
 logger = logging.getLogger(__name__)
 
 
 def _send_contact_emails(name, email, subject, message):
     admin_email = getattr(settings, 'EMAIL_HOST_USER', '') or getattr(settings, 'DEFAULT_FROM_EMAIL', '')
+    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@luxe.com')
     if not admin_email:
-        logger.warning('contact: no admin email configured, skipping notification')
+        logger.warning('contact: EMAIL_HOST_USER/DEFAULT_FROM_EMAIL not configured — skipping email send')
         return
 
     # 1 ── Notify admin
@@ -29,12 +30,18 @@ def _send_contact_emails(name, email, subject, message):
     <p style="margin:0">{message}</p>
   </div>
 </body></html>"""
-    send_email(
-        to=admin_email,
-        subject=f'[Contact Form] {subject}',
-        html=admin_html,
-        text=f'Name: {name}\nEmail: {email}\nSubject: {subject}\n\n{message}',
-    )
+    try:
+        admin_msg = EmailMultiAlternatives(
+            subject=f'[Contact Form] {subject}',
+            body=f'Name: {name}\nEmail: {email}\nSubject: {subject}\n\n{message}',
+            from_email=from_email,
+            to=[admin_email],
+        )
+        admin_msg.attach_alternative(admin_html, 'text/html')
+        admin_msg.send(fail_silently=False)
+        logger.info('contact: admin notification sent to %s', admin_email)
+    except Exception:
+        logger.exception('contact: failed to send admin notification')
 
     # 2 ── Auto-reply to visitor
     reply_html = f"""
@@ -46,17 +53,23 @@ def _send_contact_emails(name, email, subject, message):
   </div>
   <p>Best regards,<br><strong>Luxe Store Support Team</strong></p>
 </body></html>"""
-    send_email(
-        to=email,
-        subject=f'We received your message - {subject}',
-        html=reply_html,
-        text=(
-            f'Hi {name},\n\nThank you for reaching out! '
-            'We will get back to you within 1-2 business days.\n\n'
-            f'Your message:\n"{message}"\n\n'
-            'Best regards,\nLuxe Store Support Team'
-        ),
-    )
+    try:
+        reply_msg = EmailMultiAlternatives(
+            subject=f'We received your message - {subject}',
+            body=(
+                f'Hi {name},\n\nThank you for reaching out! '
+                'We will get back to you within 1-2 business days.\n\n'
+                f'Your message:\n"{message}"\n\n'
+                'Best regards,\nLuxe Store Support Team'
+            ),
+            from_email=from_email,
+            to=[email],
+        )
+        reply_msg.attach_alternative(reply_html, 'text/html')
+        reply_msg.send(fail_silently=False)
+        logger.info('contact: auto-reply sent to %s', email)
+    except Exception:
+        logger.exception('contact: failed to send auto-reply to %s', email)
 
 
 class ContactView(generics.CreateAPIView):
