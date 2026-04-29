@@ -2,16 +2,26 @@
 const nextConfig = {
   images: {
     remotePatterns: [
+      // Local development
       {
         protocol: 'http',
         hostname: 'localhost',
         port: '8000',
         pathname: '/media/**',
       },
+      // Railway production backend (wildcard covers any subdomain)
+      {
+        protocol: 'https',
+        hostname: '*.railway.app',
+        pathname: '/media/**',
+      },
+      // Also allow the direct railway.app domain without subdomain
+      {
+        protocol: 'https',
+        hostname: 'railway.app',
+        pathname: '/media/**',
+      },
     ],
-  },
-  env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api',
   },
 };
 
