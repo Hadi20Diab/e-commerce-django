@@ -1,0 +1,260 @@
+.page { padding-bottom: var(--space-3xl); }
+
+/* ── Hero ─────────────────────────────────────────────────────── */
+.hero {
+  background: linear-gradient(135deg, rgba(199, 160, 85, 0.10) 0%, rgba(0, 212, 170, 0.04) 100%),
+              var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: var(--space-3xl) var(--space-lg);
+  text-align: center;
+}
+
+.heroInner { max-width: 680px; margin: 0 auto; }
+
+.heroBadge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--primary);
+  background: rgba(199, 160, 85, 0.12);
+  border: 1px solid rgba(199, 160, 85, 0.25);
+  border-radius: 100px;
+  padding: 5px 14px;
+  margin-bottom: var(--space-md);
+}
+
+.heroTitle {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: var(--space-md);
+  line-height: 1.18;
+}
+
+.heroAccent {
+  background: linear-gradient(135deg, var(--primary), #e8c96d);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.heroSub {
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  line-height: 1.75;
+}
+
+/* ── Developer banner ─────────────────────────────────────────── */
+.devBanner {
+  background: rgba(199, 160, 85, 0.06);
+  border-top: 1px solid rgba(199, 160, 85, 0.18);
+  border-bottom: 1px solid rgba(199, 160, 85, 0.18);
+  padding: 14px var(--space-lg);
+}
+
+.devBannerInner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.devBannerIcon { font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; }
+
+.devBannerInner strong { color: var(--text-primary); }
+
+.devLink {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 600;
+  transition: color var(--transition-fast);
+}
+.devLink:hover { color: #e8c96d; }
+
+/* ── Inner container ──────────────────────────────────────────── */
+.inner {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: var(--space-2xl) var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3xl);
+}
+
+/* ── Logo section ─────────────────────────────────────────────── */
+.logoSection {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-xl) 0 0;
+}
+
+/* ── Generic section ──────────────────────────────────────────── */
+.section { display: flex; flex-direction: column; gap: var(--space-lg); }
+
+.sectionLabel {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.25;
+}
+
+/* ── Mission ──────────────────────────────────────────────────── */
+.missionGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-xl);
+}
+
+@media (max-width: 640px) {
+  .missionGrid { grid-template-columns: 1fr; }
+}
+
+.missionText {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  margin: 0;
+}
+
+/* ── Values ───────────────────────────────────────────────────── */
+.valuesGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-md);
+}
+
+@media (max-width: 540px) {
+  .valuesGrid { grid-template-columns: 1fr; }
+}
+
+.valueCard {
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.valueCard:hover {
+  border-color: rgba(199, 160, 85, 0.35);
+  transform: translateY(-2px);
+}
+
+.valueIcon { font-size: 1.6rem; margin-bottom: var(--space-sm); }
+
+.valueTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 8px;
+}
+
+.valueBody {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* ── Tech stack ───────────────────────────────────────────────── */
+.techGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+}
+
+@media (max-width: 640px) {
+  .techGrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 400px) {
+  .techGrid { grid-template-columns: 1fr; }
+}
+
+.techCard {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+}
+
+.techName {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+
+.techRole {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* ── Map ──────────────────────────────────────────────────────── */
+.mapNote {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin: 0;
+}
+
+.mapNote strong { color: var(--text-primary); }
+
+.mapWrapper {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border-default);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
+.mapWrapper iframe { display: block; }
+
+/* ── CTA ──────────────────────────────────────────────────────── */
+.cta {
+  text-align: center;
+  padding: var(--space-2xl) var(--space-xl);
+  background: linear-gradient(135deg, rgba(199, 160, 85, 0.08) 0%, rgba(0, 212, 170, 0.04) 100%);
+  border: 1px solid rgba(199, 160, 85, 0.2);
+  border-radius: var(--radius-xl);
+}
+
+.ctaTitle {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-sm);
+}
+
+.ctaSub {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin: 0 0 var(--space-xl);
+}
+
+.ctaActions {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
