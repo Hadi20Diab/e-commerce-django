@@ -183,8 +183,9 @@ PAYPAL_MODE = config('PAYPAL_MODE', default='sandbox')  # 'sandbox' or 'live'
 
 # ── Email ─────────────────────────────────
 # Switch providers with a single env var:
-#   EMAIL_PROVIDER=smtp    → Django SMTP (default; works locally, paid hosts)
-#   EMAIL_PROVIDER=resend  → Resend HTTP API (use on Render free tier)
+#   EMAIL_PROVIDER=smtp    → Django SMTP (default; works locally)
+#   EMAIL_PROVIDER=brevo   → Brevo HTTP API (free 300/day; works on Render free tier) ✅
+#   EMAIL_PROVIDER=resend  → Resend HTTP API (requires own verified domain)
 EMAIL_PROVIDER = config('EMAIL_PROVIDER', default='smtp')
 
 # SMTP settings (used when EMAIL_PROVIDER=smtp)
@@ -195,6 +196,11 @@ EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@luxe.com')
+
+# Brevo settings (used when EMAIL_PROVIDER=brevo)
+# Sign up free at https://app.brevo.com → SMTP & API → API Keys
+BREVO_API_KEY = config('BREVO_API_KEY', default='')
+BREVO_FROM_EMAIL = config('BREVO_FROM_EMAIL', default='')
 
 # Resend settings (used when EMAIL_PROVIDER=resend)
 # Sign up free at https://resend.com → API Keys → Create Key
