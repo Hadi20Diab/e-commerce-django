@@ -1,67 +1,76 @@
 """
-Thin email helper that sends via the Resend HTTP API (https://resend.com).
+Unified email helper. Switch providers with the EMAIL_PROVIDER env var:
 
-Why: Render free tier blocks ALL outbound SMTP ports (25, 465, 587).
-     Resend uses HTTPS (port 443) which is never blocked.
+  EMAIL_PROVIDER=smtp    — Django SMTP (default; works locally and on paid/unblocked hosts)
+  EMAIL_PROVIDER=resend  — Resend HTTP API (use on Render free tier where SMTP is blocked)
 
-Setup (one-time):
-  1. Sign up free at https://resend.com  — no credit card needed
-  2. Dashboard → API Keys → Create API Key
-  3. Add  RESEND_API_KEY = <your key>  in Render Environment Variables
-  4. Optionally verify your domain to send from your own address.
-     Without domain verification, from_email is forced to onboarding@resend.dev
-     but emails still reach any recipient.
-
-Free tier: 3 000 emails/month, 100/day.
+For Resend, also set:
+  RESEND_API_KEY=re_xxxxxxxxxxxx        (from https://resend.com → API Keys)
+  RESEND_FROM_EMAIL=Luxe Store <onboarding@resend.dev>   (or your verified domain address)
 """
 
 import logging
-import requests
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
+
+
+def send_email(*, to, subject, html, text='', from_email=None):
+    """
+    Send an email via the configured provider (EMAIL_PROVIDER setting).
+
+    Args:
+        to:         recipient address (str) or list of addresses
+        subject:    email subject line
+        html:       HTML body
+        text:       plain-text fallback (optional but recommended)
+        from_email: override sender — defaults to DEFAULT_FROM_EMAIL / RESEND_FROM_EMAIL
+
+    Returns True on success, False on failure.
+    """
+    provider = getattr(settings, 'EMAIL_PROVIDER', 'smtp').lower()
+    if provider == 'resend':
+        return _send_resend(to=to, subject=subject, html=html, text=text, from_email=from_email)
+    return _send_smtp(to=to, subject=subject, html=html, text=text, from_email=from_email)
+
+
+# ── SMTP (Django built-in) ──────────────────────────────────────────────────────
+
+def _send_smtp(*, to, subject, html, text, from_email):
+    from django.core.mail import EmailMultiAlternatives
+    sender = from_email or getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@luxe.com')
+    recipients = [to] if isinstance(to, str) else list(to)
+    try:
+        msg = EmailMultiAlternatives(subject, text, sender, recipients)
+        msg.attach_alternative(html, 'text/html')
+        msg.send(fail_silently=False)
+        logger.info('mailer(smtp): sent "%s" to %s', subject, recipients)
+        return True
+    except Exception:
+        logger.exception('mailer(smtp): failed to send "%s" to %s', subject, recipients)
+        return False
+
+
+# ── Resend HTTP API ─────────────────────────────────────────────────────────────
 
 _RESEND_URL = 'https://api.resend.com/emails'
 _FALLBACK_FROM = 'Luxe Store <onboarding@resend.dev>'
 
 
-def send_email(*, to, subject, html, text='', from_email=None):
-    """
-    Send a single email via Resend.
-
-    Args:
-        to:         recipient address string or list of strings
-        subject:    email subject
-        html:       HTML body
-        text:       plain-text fallback (optional but recommended)
-        from_email: sender address – defaults to RESEND_FROM_EMAIL setting or
-                    'Luxe Store <onboarding@resend.dev>' (works without domain verification)
-
-    Returns True on success, False on failure (always logs errors).
-    """
+def _send_resend(*, to, subject, html, text, from_email):
+    import requests
     api_key = getattr(settings, 'RESEND_API_KEY', '')
     if not api_key:
         logger.error(
-            'mailer: RESEND_API_KEY is not set — email to %s was NOT sent. '
-            'Add RESEND_API_KEY in your Render environment variables.',
+            'mailer(resend): RESEND_API_KEY not set — email to %s NOT sent. '
+            'Add RESEND_API_KEY to your environment variables.',
             to,
         )
         return False
 
-    sender = (
-        from_email
-        or getattr(settings, 'RESEND_FROM_EMAIL', None)
-        or _FALLBACK_FROM
-    )
-
+    sender = from_email or getattr(settings, 'RESEND_FROM_EMAIL', None) or _FALLBACK_FROM
     recipients = [to] if isinstance(to, str) else list(to)
-
-    payload = {
-        'from': sender,
-        'to': recipients,
-        'subject': subject,
-        'html': html,
-    }
+    payload = {'from': sender, 'to': recipients, 'subject': subject, 'html': html}
     if text:
         payload['text'] = text
 
@@ -73,15 +82,13 @@ def send_email(*, to, subject, html, text='', from_email=None):
             timeout=15,
         )
         if resp.status_code in (200, 201):
-            logger.info('mailer: email sent to %s (id=%s)', recipients, resp.json().get('id'))
+            logger.info('mailer(resend): sent "%s" to %s', subject, recipients)
             return True
-        else:
-            logger.error(
-                'mailer: Resend returned %d — %s',
-                resp.status_code,
-                resp.text[:300],
-            )
-            return False
+        logger.error(
+            'mailer(resend): API returned %d for "%s" to %s — %s',
+            resp.status_code, subject, recipients, resp.text[:300],
+        )
+        return False
     except Exception:
-        logger.exception('mailer: unexpected error sending to %s', recipients)
+        logger.exception('mailer(resend): request failed for "%s" to %s', subject, recipients)
         return False

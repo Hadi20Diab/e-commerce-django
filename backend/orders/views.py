@@ -10,7 +10,7 @@ from decimal import Decimal
 import requests as http_requests
 import logging
 
-from django.core.mail import EmailMultiAlternatives
+from mailer import send_email
 
 logger = logging.getLogger(__name__)
 
@@ -100,10 +100,7 @@ def _send_order_confirmation_task(order):
 </body></html>"""
 
     try:
-        from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@luxe.com')
-        msg = EmailMultiAlternatives(subject, text_body, from_email, [recipient])
-        msg.attach_alternative(html_body, 'text/html')
-        msg.send(fail_silently=False)
+        send_email(to=recipient, subject=subject, html=html_body, text=text_body)
     except Exception:
         logger.exception('Failed to send order confirmation email for order %s', order.id)
 
